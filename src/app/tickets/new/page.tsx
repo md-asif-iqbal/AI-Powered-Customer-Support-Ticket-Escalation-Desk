@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { analyzeTicketHeuristically } from "@/lib/ai-service";
 import { apiFetch } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function NewTicketPage() {
   const router = useRouter();
@@ -129,12 +130,20 @@ export default function NewTicketPage() {
       });
 
       setSuccess(true);
+      toast.success(`Ticket #${data.ticket.ticketNumber} created successfully!`, {
+        description: `Assigned to ${assignedDisplay}`,
+        duration: 4000,
+      });
 
       setTimeout(() => {
         router.push(`/tickets/${ticketId}?created=true`);
       }, 2500);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to create ticket");
+      const msg = err instanceof Error ? err.message : "Failed to create ticket";
+      setError(msg);
+      toast.error("Failed to create ticket", {
+        description: msg,
+      });
       setLoading(false);
     }
   };

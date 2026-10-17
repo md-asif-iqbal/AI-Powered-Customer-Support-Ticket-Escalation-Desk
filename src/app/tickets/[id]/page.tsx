@@ -14,6 +14,7 @@ import { ITicketComment } from "@/lib/models/TicketComment";
 import { IEscalationLog } from "@/lib/models/EscalationLog";
 import { SlaCalculationResult } from "@/lib/sla";
 import { apiFetch } from "@/lib/api";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,6 +32,7 @@ import {
   Headset,
   Star,
   Bell,
+  RotateCcw,
 } from "lucide-react";
 
 interface TicketDetailData {
@@ -145,14 +147,16 @@ export default function TicketDetailPage({ params }: PageProps) {
         }),
       });
 
-      setFeedbackSuccess(
-        isReported
-          ? "Incident report filed with administrators. Audit log created."
-          : "Thank you! Your feedback has been recorded and factored into AI leaderboard scores."
-      );
+      const message = isReported
+        ? "Incident report filed with administrators. Escalation audit created."
+        : "Thank you! Your feedback has been recorded and factored into AI leaderboard scores.";
+      setFeedbackSuccess(message);
+      toast.success(message);
       await loadTicket();
     } catch (err: unknown) {
-      setFeedbackError(err instanceof Error ? err.message : "Failed to submit feedback");
+      const errorMsg = err instanceof Error ? err.message : "Failed to submit feedback";
+      setFeedbackError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setSubmittingFeedback(false);
     }
@@ -211,10 +215,14 @@ export default function TicketDetailPage({ params }: PageProps) {
           assignedTo: selectedAgentIds[0] || null,
         }),
       });
+      toast.success("Assigned team updated successfully!");
       await loadTicket();
       setAssignModalOpen(false);
     } catch (err) {
       console.error("Failed to save assignees:", err);
+      toast.error("Failed to update assignees", {
+        description: err instanceof Error ? err.message : "An error occurred.",
+      });
     } finally {
       setSavingAssignees(false);
     }
@@ -226,9 +234,13 @@ export default function TicketDetailPage({ params }: PageProps) {
         method: "POST",
         body: JSON.stringify({ thresholdMinutes: 15 }),
       });
+      toast.info("Inactivity evaluation completed.");
       await loadTicket();
     } catch (err) {
       console.error("Failed to trigger inactivity check:", err);
+      toast.error("Inactivity check failed", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     }
   };
 
@@ -275,10 +287,11 @@ export default function TicketDetailPage({ params }: PageProps) {
       setReplyMessage("");
       setIsInternalNote(false);
       await loadTicket();
+      toast.success(isInternalNote ? "Internal staff note saved." : "Reply sent successfully.");
     } catch (err: unknown) {
-      setReplyError(
-        err instanceof Error ? err.message : "Failed to post comment",
-      );
+      const msg = err instanceof Error ? err.message : "Failed to post comment";
+      setReplyError(msg);
+      toast.error(msg);
     } finally {
       setSubmittingReply(false);
     }
@@ -291,8 +304,15 @@ export default function TicketDetailPage({ params }: PageProps) {
         body: JSON.stringify({ status: newStatus }),
       });
       await loadTicket();
-    } catch (err) {
-      console.error(err);
+      if (newStatus === "RESOLVED") {
+        toast.success("Ticket has been marked as Resolved.");
+      } else if (newStatus === "OPEN") {
+        toast.info("Ticket reopened successfully. Replies are now unlocked.");
+      } else {
+        toast.success(`Ticket status updated to ${newStatus}.`);
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update status");
     }
   };
 
@@ -304,8 +324,11 @@ export default function TicketDetailPage({ params }: PageProps) {
         body: JSON.stringify({ reason, notes }),
       });
       await loadTicket();
-    } catch (err) {
-      console.error(err);
+      toast.error("Ticket escalated to senior engineering team.", {
+        description: `Reason: ${reason}`,
+      });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Escalation failed");
     } finally {
       setEscalating(false);
     }
@@ -318,8 +341,9 @@ export default function TicketDetailPage({ params }: PageProps) {
         method: "POST",
       });
       await loadTicket();
+      toast.success("AI re-analysis completed.");
     } catch (err) {
-      console.error(err);
+      toast.error("Failed to run AI re-analysis.");
     } finally {
       setAnalyzingAi(false);
     }
@@ -638,43 +662,59 @@ export default function TicketDetailPage({ params }: PageProps) {
 
             {/* Actions */}
             {canModifyTicket ? (
-              <div className="flex flex-wrap items-center gap-2">
-                {ticket.status !== "RESOLVED" && ticket.status !== "CLOSED" && (
-                  <button
-                    type="button"
-                    onClick={() => handleStatusChange("RESOLVED")}
-                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white rounded-lg shadow-xs transition hover:opacity-95 bg-brand-primary hover:bg-brand-dark whitespace-nowrap shrink-0"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    Mark as Resolved
-                  </button>
-                )}
-
-                {ticket.status !== "ESCALATED" &&
-                  ticket.status !== "CLOSED" && (
-                    <button
-                      type="button"
-                      onClick={() => setEscalateModalOpen(true)}
-                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-xs transition whitespace-nowrap shrink-0"
-                    >
-                      <ShieldAlert className="w-4 h-4" />
-                      Escalate Ticket
-                    </button>
-                  )}
-
+              <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
+                {/* When Resolved: ONLY show Reopen button */}
                 {ticket.status === "RESOLVED" && (
                   <button
                     type="button"
                     onClick={() => handleStatusChange("OPEN")}
-                    className="px-3 py-2 text-xs font-bold text-gray-700 bg-brand-light hover:bg-gray-200 rounded-lg transition whitespace-nowrap shrink-0"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-brand-dark bg-white border border-brand-mint/70 hover:bg-brand-light hover:border-brand-primary rounded-xl shadow-xs transition hover:scale-102 whitespace-nowrap shrink-0"
                   >
-                    Reopen Ticket
+                    <RotateCcw className="w-3.5 h-3.5 text-brand-primary shrink-0" />
+                    <span>Reopen Ticket</span>
                   </button>
+                )}
+
+                {/* When Closed: ONLY show Reopen button */}
+                {ticket.status === "CLOSED" && (
+                  <button
+                    type="button"
+                    onClick={() => handleStatusChange("OPEN")}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-brand-dark bg-white border border-brand-mint/70 hover:bg-brand-light hover:border-brand-primary rounded-xl shadow-xs transition hover:scale-102 whitespace-nowrap shrink-0"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-brand-primary shrink-0" />
+                    <span>Reopen Ticket</span>
+                  </button>
+                )}
+
+                {/* When Active (OPEN, IN_PROGRESS, ESCALATED): Show Mark as Resolved and Escalate (if not already escalated) */}
+                {ticket.status !== "RESOLVED" && ticket.status !== "CLOSED" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleStatusChange("RESOLVED")}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-brand-primary hover:bg-brand-dark rounded-xl shadow-xs transition hover:scale-102 whitespace-nowrap shrink-0"
+                    >
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      <span>Mark as Resolved</span>
+                    </button>
+
+                    {ticket.status !== "ESCALATED" && (
+                      <button
+                        type="button"
+                        onClick={() => setEscalateModalOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-xs transition hover:scale-102 whitespace-nowrap shrink-0"
+                      >
+                        <ShieldAlert className="w-4 h-4 shrink-0" />
+                        <span>Escalate Ticket</span>
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             ) : isUnassignedAgent ? (
-              <div className="flex items-center gap-1 px-3 py-2 text-xs font-bold text-amber-800 bg-amber-100 rounded-lg whitespace-nowrap shrink-0">
-                <Lock className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-800 bg-amber-100 rounded-xl whitespace-nowrap shrink-0">
+                <Lock className="w-3.5 h-3.5 shrink-0" />
                 <span>Assigned to Other Agent</span>
               </div>
             ) : null}
@@ -965,8 +1005,34 @@ export default function TicketDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Reply Composer Form */}
-            {canModifyTicket ? (
+            {/* Reply Composer Section */}
+            {ticket.status === "RESOLVED" || ticket.status === "CLOSED" ? (
+              <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-brand-mint text-emerald-700 flex items-center justify-center mx-auto shadow-xs">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-brand-dark">
+                    This Ticket is Marked as {ticket.status === "RESOLVED" ? "Resolved" : "Closed"}
+                  </h4>
+                  <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed">
+                    Posting replies is locked because this ticket is resolved. If your issue still requires attention or you have further queries, please reopen the ticket.
+                  </p>
+                </div>
+                {canModifyTicket && (
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleStatusChange("OPEN")}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-brand-primary hover:bg-brand-dark rounded-xl shadow-xs transition hover:scale-102 whitespace-nowrap shrink-0"
+                    >
+                      <RotateCcw className="w-4 h-4 shrink-0" />
+                      Reopen Ticket to Send Reply
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : canModifyTicket ? (
               <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-gray-800">
@@ -1056,14 +1122,49 @@ export default function TicketDetailPage({ params }: PageProps) {
             ) : null}
           </div>
 
-          {/* Right Column: AI Copilot & Escalation Audit Trail */}
+          {/* Right Column: AI Copilot (Staff Only) / Support Overview (Customer) & Escalation Audit Trail */}
           <div className="space-y-6">
-            <AiInsightBox
-              aiAnalysis={ticket.aiAnalysis}
-              onApplySuggestedReply={(reply) => setReplyMessage(reply)}
-              onRefreshAi={handleRefreshAi}
-              isLoading={analyzingAi}
-            />
+            {isAgentOrAdmin ? (
+              <AiInsightBox
+                aiAnalysis={ticket.aiAnalysis}
+                onApplySuggestedReply={(reply) => setReplyMessage(reply)}
+                onRefreshAi={handleRefreshAi}
+                isLoading={analyzingAi}
+              />
+            ) : (
+              <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light space-y-4">
+                <div className="flex items-center gap-2 text-brand-dark font-bold text-xs uppercase tracking-wider pb-2 border-b border-brand-light">
+                  <Headset className="w-4 h-4 text-brand-primary" />
+                  Assigned Support Desk
+                </div>
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                    <span className="text-gray-500">Ticket Reference:</span>
+                    <span className="font-mono font-bold text-brand-dark">{ticket.ticketNumber}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                    <span className="text-gray-500">Service Category:</span>
+                    <span className="font-bold text-gray-800">{ticket.category}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                    <span className="text-gray-500">Priority Level:</span>
+                    <PriorityBadge priority={ticket.priority} />
+                  </div>
+                  <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                    <span className="text-gray-500">Assigned Agent:</span>
+                    <span className="font-bold text-brand-dark">
+                      {ticket.assignedAgents && ticket.assignedAgents.length > 0
+                        ? ticket.assignedAgents.map((a: { name?: string }) => a.name).join(" & ")
+                        : ticket.assignedTo?.name || "Support Availability Queue"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1.5">
+                    <span className="text-gray-500">Target SLA Window:</span>
+                    <span className="font-bold text-brand-primary">Within {ticket.slaHours || 24} Hours</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-brand-light">

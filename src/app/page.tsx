@@ -25,6 +25,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface EnrichedTicket extends Omit<ITicket, "_id" | "customer" | "assignedTo" | "assignedAgents"> {
   _id: string;
@@ -118,10 +119,16 @@ export default function DashboardPage() {
         prev.map((t) => (t._id === ticketId ? { ...t, ...res.ticket } : t))
       );
       setAssignSuccessTicketId(ticketId);
+      toast.success("Support agent assigned successfully!", {
+        description: "The ticket workload has been updated.",
+      });
       setTimeout(() => setAssignSuccessTicketId(null), 2500);
       loadAvailableAgents();
     } catch (err) {
       console.error("Failed to assign agent:", err);
+      toast.error("Failed to assign agent", {
+        description: err instanceof Error ? err.message : "Please check permissions.",
+      });
     } finally {
       setAssigningTicketId(null);
     }
@@ -161,11 +168,15 @@ export default function DashboardPage() {
         prev.map((t) => (t._id === teamModalTicket._id ? { ...t, ...res.ticket } : t))
       );
       setAssignSuccessTicketId(teamModalTicket._id);
+      toast.success("Team co-assignees updated successfully!");
       setTimeout(() => setAssignSuccessTicketId(null), 2500);
       setTeamModalTicket(null);
       loadAvailableAgents();
     } catch (err) {
       console.error("Failed to save team:", err);
+      toast.error("Failed to update team assignees", {
+        description: err instanceof Error ? err.message : "An error occurred.",
+      });
     } finally {
       setSavingTeam(false);
     }
