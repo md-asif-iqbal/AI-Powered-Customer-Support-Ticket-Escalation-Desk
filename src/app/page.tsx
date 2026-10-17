@@ -18,7 +18,7 @@ import {
   ArrowRight,
   TrendingUp,
   Inbox,
-  Sparkles,
+  Headset,
 } from "lucide-react";
 
 interface EnrichedTicket extends Omit<ITicket, "customer" | "assignedTo"> {
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                                 : "bg-emerald-100 text-emerald-800"
                             }`}
                           >
-                            <Sparkles className="w-2.5 h-2.5" />
+                            <Headset className="w-2.5 h-2.5" />
                             {t.aiAnalysis.sentiment}
                           </span>
                         )}

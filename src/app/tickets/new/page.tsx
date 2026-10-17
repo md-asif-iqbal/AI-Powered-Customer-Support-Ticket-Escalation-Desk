@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import {
-  Sparkles,
+  Headset,
   Send,
   AlertCircle,
   Clock,
@@ -238,7 +238,7 @@ export default function NewTicketPage() {
           <div className="space-y-4">
             <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light space-y-4">
               <div className="flex items-center gap-2 text-brand-dark font-bold text-sm pb-2 border-b border-brand-light">
-                <Sparkles className="w-4 h-4 text-brand-primary" />
+                <Headset className="w-4 h-4 text-brand-primary" />
                 Live AI Triage Preview
               </div>
 
@@ -303,7 +303,7 @@ export default function NewTicketPage() {
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-400 space-y-2">
-                  <Sparkles className="w-8 h-8 mx-auto text-gray-300 animate-pulse" />
+                  <Headset className="w-8 h-8 mx-auto text-gray-300 animate-pulse" />
                   <p className="text-xs">
                     Start typing your title and description to see live AI sentiment and escalation suggestions.
                   </p>

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { IAiAnalysis } from "@/lib/models/Ticket";
-import { Sparkles, Copy, Check, Info, ShieldAlert, Cpu } from "lucide-react";
+import { Headset, Copy, Check, Info, ShieldAlert, Cpu } from "lucide-react";
 
 interface AiInsightBoxProps {
   aiAnalysis?: IAiAnalysis | null;
@@ -25,7 +25,7 @@ export function AiInsightBox({
       <div className="bg-white border border-brand-light rounded-xl p-5 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-brand-dark font-semibold">
-            <Sparkles className="w-5 h-5 text-brand-primary" />
+            <Headset className="w-5 h-5 text-brand-primary" />
             <h3>AI Triage & Sentiment Copilot</h3>
           </div>
           {onRefreshAi && (
@@ -66,7 +66,7 @@ export function AiInsightBox({
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-brand-light">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white bg-brand-dark">
-            <Sparkles className="w-4 h-4 text-brand-mint" />
+            <Headset className="w-4 h-4 text-brand-mint" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -116,26 +116,26 @@ export function AiInsightBox({
         </div>
       )}
 
-      {/* Metric Badges Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Metric Badges Grid - Designed to never collide or overflow even in narrow sidebars */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         {/* Sentiment */}
-        <div className="p-3 rounded-lg border border-brand-light bg-brand-light/30">
-          <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">
-            Detected Sentiment
-          </span>
-          <div className="flex items-center justify-between">
-            <span className={`px-2 py-0.5 rounded text-xs font-bold border ${sentimentClasses}`}>
-              {aiAnalysis.sentiment}
-            </span>
-            <span className="text-xs font-mono font-bold text-gray-700">
+        <div className="p-3 rounded-lg border border-brand-light bg-brand-light/30 flex flex-col justify-between overflow-hidden">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+            <span>Sentiment</span>
+            <span className="font-mono text-gray-700 font-bold normal-case text-xs">
               Score: {aiAnalysis.sentimentScore > 0 ? `+${aiAnalysis.sentimentScore}` : aiAnalysis.sentimentScore}
+            </span>
+          </div>
+          <div>
+            <span className={`inline-block px-2.5 py-0.5 rounded text-xs font-bold border ${sentimentClasses}`}>
+              {aiAnalysis.sentiment}
             </span>
           </div>
         </div>
 
         {/* Urgency Score */}
-        <div className="p-3 rounded-lg border border-brand-light bg-brand-light/30">
-          <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">
+        <div className="p-3 rounded-lg border border-brand-light bg-brand-light/30 flex flex-col justify-between overflow-hidden">
+          <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
             Urgency Score
           </span>
           <div className="flex items-center gap-2">
@@ -145,21 +145,21 @@ export function AiInsightBox({
                 style={{ width: `${aiAnalysis.urgencyScore}%` }}
               />
             </div>
-            <span className="text-xs font-mono font-bold text-gray-800">
+            <span className="text-xs font-mono font-bold text-gray-800 shrink-0">
               {aiAnalysis.urgencyScore}/100
             </span>
           </div>
         </div>
 
         {/* AI Recommendations */}
-        <div className="p-3 rounded-lg border border-brand-light bg-brand-light/30">
-          <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">
+        <div className="p-3 rounded-lg border border-brand-light bg-brand-light/30 flex flex-col justify-between overflow-hidden">
+          <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
             AI Triage
           </span>
-          <div className="flex items-center gap-2 text-xs font-semibold text-gray-800">
-            <span>{aiAnalysis.recommendedPriority} Priority</span>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-800 flex-wrap">
+            <span className="whitespace-nowrap">{aiAnalysis.recommendedPriority} Priority</span>
             <span className="text-gray-400">•</span>
-            <span>{aiAnalysis.recommendedCategory}</span>
+            <span className="truncate">{aiAnalysis.recommendedCategory}</span>
           </div>
         </div>
       </div>
@@ -180,7 +180,7 @@ export function AiInsightBox({
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-brand-dark flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-brand-primary" />
+              <Headset className="w-3.5 h-3.5 text-brand-primary" />
               Suggested First Response Draft
             </span>
             <div className="flex items-center gap-2">

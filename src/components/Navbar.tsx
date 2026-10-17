@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   X,
-  RefreshCw,
 } from "lucide-react";
 import { removeToken } from "@/lib/api";
 import { logoutFromFirebase } from "@/lib/firebase";
@@ -24,10 +23,9 @@ interface NavbarProps {
   onRefresh?: () => void;
 }
 
-export function Navbar({ currentUser, onRefresh }: NavbarProps) {
+export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -39,21 +37,6 @@ export function Navbar({ currentUser, onRefresh }: NavbarProps) {
     } finally {
       router.push("/login");
       router.refresh();
-    }
-  };
-
-  const handleQuickSeed = async () => {
-    try {
-      setIsSeeding(true);
-      const res = await fetch("/api/seed", { method: "POST" });
-      if (res.ok) {
-        if (onRefresh) onRefresh();
-        else router.refresh();
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsSeeding(false);
     }
   };
 
@@ -100,17 +83,6 @@ export function Navbar({ currentUser, onRefresh }: NavbarProps) {
               <PlusCircle className="w-4 h-4" />
               New Ticket
             </Link>
-
-            {/* Quick Seed Demo Button */}
-            <button
-              onClick={handleQuickSeed}
-              disabled={isSeeding}
-              title="Seed 4 demo tickets and reset sample dataset"
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-semibold text-brand-dark bg-brand-light hover:bg-gray-200 transition"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSeeding ? "animate-spin" : ""}`} />
-              {isSeeding ? "Seeding..." : "Reset / Seed Demo"}
-            </button>
           </div>
 
           {/* User Section (Desktop) */}
@@ -183,17 +155,6 @@ export function Navbar({ currentUser, onRefresh }: NavbarProps) {
           >
             + Create New Ticket
           </Link>
-
-          <button
-            onClick={() => {
-              handleQuickSeed();
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left text-xs font-semibold text-brand-dark py-2 flex items-center gap-2"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Reset / Seed Demo Tickets
-          </button>
 
           {currentUser ? (
             <div className="pt-2 border-t border-brand-light space-y-2">
