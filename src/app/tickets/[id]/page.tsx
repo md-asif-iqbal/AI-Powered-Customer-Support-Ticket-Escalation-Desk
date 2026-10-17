@@ -48,17 +48,21 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+interface AuthUser {
+  _id?: string;
+  userId: string;
+  name: string;
+  email: string;
+  role: "CUSTOMER" | "AGENT" | "ADMIN";
+  assignedTicketsCount?: number;
+}
+
 export default function TicketDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const ticketId = resolvedParams.id;
   const router = useRouter();
 
-  const [currentUser, setCurrentUser] = useState<{
-    userId: string;
-    name: string;
-    email: string;
-    role: "CUSTOMER" | "AGENT" | "ADMIN";
-  } | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
 
   const [data, setData] = useState<TicketDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,6 +71,7 @@ export default function TicketDetailPage({ params }: PageProps) {
   const [replyMessage, setReplyMessage] = useState("");
   const [isInternalNote, setIsInternalNote] = useState(false);
   const [submittingReply, setSubmittingReply] = useState(false);
+  const [replyError, setReplyError] = useState("");
 
   const [escalateModalOpen, setEscalateModalOpen] = useState(false);
   const [escalating, setEscalating] = useState(false);
@@ -169,12 +174,24 @@ export default function TicketDetailPage({ params }: PageProps) {
   };
 
   useEffect(() => {
-    apiFetch<{ user: typeof currentUser }>("/auth/me")
+    apiFetch<{
+      user: AuthUser & { _id?: string };
+      assignedTicketsCount?: number;
+    }>("/auth/me")
       .then((authData) => {
         if (!authData.user) {
           router.push("/login");
         } else {
-          setCurrentUser(authData.user);
+          const u = authData.user;
+          const normalized: AuthUser = {
+            _id: u._id || u.userId,
+            userId: u.userId || u._id || "",
+            name: u.name,
+            email: u.email,
+            role: u.role,
+            assignedTicketsCount: authData.assignedTicketsCount,
+          };
+          setCurrentUser(normalized);
           loadTicket();
         }
       })
@@ -186,6 +203,7 @@ export default function TicketDetailPage({ params }: PageProps) {
     if (!replyMessage.trim()) return;
 
     setSubmittingReply(true);
+    setReplyError("");
     try {
       await apiFetch(`/tickets/${ticketId}/comments`, {
         method: "POST",
@@ -198,8 +216,10 @@ export default function TicketDetailPage({ params }: PageProps) {
       setReplyMessage("");
       setIsInternalNote(false);
       await loadTicket();
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      setReplyError(
+        err instanceof Error ? err.message : "Failed to post comment"
+      );
     } finally {
       setSubmittingReply(false);
     }
@@ -281,22 +301,39 @@ export default function TicketDetailPage({ params }: PageProps) {
   const { ticket, comments, escalationLogs } = data;
   const isAgentOrAdmin = currentUser?.role === "AGENT" || currentUser?.role === "ADMIN";
   const isAdmin = currentUser?.role === "ADMIN";
-  const isCustomerOwner = currentUser?.role === "CUSTOMER" && ticket.customer?._id === currentUser.userId;
+  const currentUserId = currentUser?.userId || currentUser?._id || "";
+
+  const isCustomerOwner =
+    currentUser?.role === "CUSTOMER" &&
+    Boolean(
+      currentUserId &&
+        (typeof ticket.customer === "object"
+          ? (ticket.customer as { _id?: string })._id === currentUserId
+          : String(ticket.customer) === currentUserId)
+    );
 
   const isAssignedAgent =
     currentUser?.role === "AGENT" &&
-    ((ticket.assignedTo &&
-      (typeof ticket.assignedTo === "object"
-        ? (ticket.assignedTo as { _id?: string })._id === currentUser.userId
-        : ticket.assignedTo === currentUser.userId)) ||
-      (ticket.assignedAgents &&
-        ticket.assignedAgents.some((ag) =>
-          typeof ag === "object" ? (ag as { _id?: string })._id === currentUser.userId : ag === currentUser.userId
-        )));
+    Boolean(
+      currentUserId &&
+        ((ticket.assignedTo &&
+          (typeof ticket.assignedTo === "object"
+            ? (ticket.assignedTo as { _id?: string })._id === currentUserId
+            : String(ticket.assignedTo) === currentUserId)) ||
+          (ticket.assignedAgents &&
+            ticket.assignedAgents.some((ag) => {
+              const agId = typeof ag === "object" ? (ag as { _id?: string })._id : String(ag);
+              return agId === currentUserId;
+            })))
+    );
 
-  // If user is an AGENT but not assigned to this ticket, they are in read-only mode!
-  const isUnassignedAgent = currentUser?.role === "AGENT" && !isAssignedAgent;
-  const canModifyTicket = isAdmin || isCustomerOwner || isAssignedAgent;
+  const isUnassignedTicket =
+    !ticket.assignedTo && (!ticket.assignedAgents || ticket.assignedAgents.length === 0);
+
+  // If user is an AGENT but not assigned to this ticket and ticket is assigned to someone else, they are in read-only mode!
+  const isUnassignedAgent = currentUser?.role === "AGENT" && !isAssignedAgent && !isUnassignedTicket;
+  const canModifyTicket =
+    isAdmin || isCustomerOwner || isAssignedAgent || (currentUser?.role === "AGENT" && isUnassignedTicket);
 
   return (
     <div className="min-h-screen bg-[#F8FAF9] flex flex-col">
@@ -597,6 +634,18 @@ export default function TicketDetailPage({ params }: PageProps) {
                 </div>
 
                 <form onSubmit={handlePostReply} className="space-y-3">
+                  {replyError && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center justify-between">
+                      <span>{replyError}</span>
+                      <button
+                        type="button"
+                        onClick={() => setReplyError("")}
+                        className="text-red-500 hover:text-red-800 font-bold ml-2"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                   <textarea
                     rows={4}
                     value={replyMessage}
