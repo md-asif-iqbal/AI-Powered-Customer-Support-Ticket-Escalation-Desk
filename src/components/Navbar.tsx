@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MonitorCheck, PlusCircle, LogOut, Menu, X, Trophy } from "lucide-react";
-import { removeToken } from "@/lib/api";
+import { MonitorCheck, PlusCircle, LogOut, Menu, X, Trophy, Target } from "lucide-react";
+import { removeToken, apiFetch } from "@/lib/api";
 import { logoutFromFirebase } from "@/lib/firebase";
 
 interface NavbarProps {
@@ -13,13 +13,41 @@ interface NavbarProps {
     name: string;
     email: string;
     role: "CUSTOMER" | "AGENT" | "ADMIN";
+    assignedTicketsCount?: number;
   } | null;
+  assignedTicketsCount?: number;
   onRefresh?: () => void;
 }
 
-export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
+export function Navbar({ currentUser, assignedTicketsCount, onRefresh }: NavbarProps) {
+  void onRefresh;
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [fetchedCount, setFetchedCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (
+      currentUser?.role === "AGENT" &&
+      typeof assignedTicketsCount !== "number" &&
+      typeof currentUser?.assignedTicketsCount !== "number" &&
+      fetchedCount === null
+    ) {
+      apiFetch<{ assignedTicketsCount?: number }>("/auth/me")
+        .then((res) => {
+          if (typeof res.assignedTicketsCount === "number") {
+            setFetchedCount(res.assignedTicketsCount);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [currentUser, assignedTicketsCount, fetchedCount]);
+
+  const activeCount =
+    typeof assignedTicketsCount === "number"
+      ? assignedTicketsCount
+      : typeof currentUser?.assignedTicketsCount === "number"
+      ? currentUser.assignedTicketsCount
+      : fetchedCount;
 
   const handleLogout = async () => {
     try {
@@ -80,13 +108,28 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
               Leaderboard
             </Link>
 
-            <Link
-              href="/tickets/new"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white shadow-xs transition hover:opacity-95 bg-brand-primary"
-            >
-              <PlusCircle className="w-4 h-4" />
-              New Ticket
-            </Link>
+            {currentUser?.role === "AGENT" ? (
+              <Link
+                href="/?filter=my_assigned"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold text-white shadow-xs transition hover:opacity-95 bg-brand-primary"
+              >
+                <Target className="w-4 h-4 text-brand-mint" />
+                <span>My Assigned Tickets</span>
+                {typeof activeCount === "number" && (
+                  <span className="ml-1 px-1.5 py-0.2 rounded-full text-xs font-black bg-white text-brand-dark">
+                    {activeCount}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <Link
+                href="/tickets/new"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white shadow-xs transition hover:opacity-95 bg-brand-primary"
+              >
+                <PlusCircle className="w-4 h-4" />
+                New Ticket
+              </Link>
+            )}
           </div>
 
           {/* User Section (Desktop) */}
@@ -170,13 +213,32 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
             <Trophy className="w-4 h-4 text-amber-500" />
             Agent Leaderboard
           </Link>
-          <Link
-            href="/tickets/new"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-gray-800 py-2 border-b border-brand-light"
-          >
-            + Create New Ticket
-          </Link>
+
+          {currentUser?.role === "AGENT" ? (
+            <Link
+              href="/?filter=my_assigned"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between text-sm font-bold text-brand-primary py-2 border-b border-brand-light"
+            >
+              <span className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-brand-primary" />
+                My Assigned Tickets
+              </span>
+              {typeof activeCount === "number" && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-black bg-brand-primary text-white">
+                  {activeCount}
+                </span>
+              )}
+            </Link>
+          ) : (
+            <Link
+              href="/tickets/new"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm font-semibold text-gray-800 py-2 border-b border-brand-light"
+            >
+              + Create New Ticket
+            </Link>
+          )}
 
           {currentUser ? (
             <div className="pt-2 border-t border-brand-light space-y-2">

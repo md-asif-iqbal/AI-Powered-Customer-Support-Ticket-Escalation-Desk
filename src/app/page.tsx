@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Inbox,
   Headset,
+  Target,
 } from "lucide-react";
 
 interface EnrichedTicket extends Omit<ITicket, "customer" | "assignedTo"> {
@@ -46,6 +47,7 @@ export default function DashboardPage() {
     name: string;
     email: string;
     role: "CUSTOMER" | "AGENT" | "ADMIN";
+    assignedTicketsCount?: number;
   } | null>(null);
 
   const [tickets, setTickets] = useState<EnrichedTicket[]>([]);
@@ -57,6 +59,14 @@ export default function DashboardPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [selectedPriority, setSelectedPriority] = useState<string>("ALL");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [onlyAssignedToMe, setOnlyAssignedToMe] = useState(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get("filter") === "my_assigned";
+    }
+    return false;
+  });
+  const [assignedCount, setAssignedCount] = useState<number>(0);
 
   const loadData = useCallback(async () => {
     try {
@@ -66,6 +76,7 @@ export default function DashboardPage() {
       if (selectedPriority !== "ALL") params.append("priority", selectedPriority);
       if (selectedCategory !== "ALL") params.append("category", selectedCategory);
       if (search.trim()) params.append("q", search.trim());
+      if (onlyAssignedToMe) params.append("assignedToMe", "true");
 
       const [ticketsData, statsData] = await Promise.all([
         apiFetch<{ tickets: EnrichedTicket[] }>(`/tickets?${params.toString()}`),
@@ -79,15 +90,18 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedStatus, selectedPriority, selectedCategory, search, router]);
+  }, [selectedStatus, selectedPriority, selectedCategory, search, onlyAssignedToMe, router]);
 
   useEffect(() => {
-    apiFetch<{ user: typeof currentUser }>("/auth/me")
+    apiFetch<{ user: typeof currentUser; assignedTicketsCount?: number }>("/auth/me")
       .then((data) => {
         if (!data.user) {
           router.push("/login");
         } else {
           setCurrentUser(data.user);
+          if (typeof data.assignedTicketsCount === "number") {
+            setAssignedCount(data.assignedTicketsCount);
+          }
           loadData();
         }
       })
@@ -96,7 +110,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAF9] flex flex-col">
-      <Navbar currentUser={currentUser} onRefresh={loadData} />
+      <Navbar currentUser={currentUser} assignedTicketsCount={assignedCount} onRefresh={loadData} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Welcome & Action Header */}
@@ -111,13 +125,20 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/tickets/new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-xs transition hover:opacity-95 bg-brand-primary"
-            >
-              <PlusCircle className="w-4 h-4" />
-              Create Ticket
-            </Link>
+            {currentUser?.role !== "AGENT" ? (
+              <Link
+                href="/tickets/new"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-xs transition hover:opacity-95 bg-brand-primary"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Create Ticket
+              </Link>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-light text-brand-dark border border-brand-mint/40">
+                <Headset className="w-4 h-4 text-brand-primary" />
+                <span>Agent Support Workspace</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -190,6 +211,53 @@ export default function DashboardPage() {
 
         {/* Filter & Search Bar */}
         <div className="bg-white p-4 rounded-2xl border border-brand-light shadow-xs space-y-3">
+          {/* Quick Filter Tabs */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-brand-light">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setOnlyAssignedToMe(false)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                  !onlyAssignedToMe
+                    ? "bg-brand-dark text-white shadow-xs"
+                    : "bg-white text-gray-700 border border-brand-light hover:bg-brand-light"
+                }`}
+              >
+                All Tickets
+              </button>
+
+              {(currentUser?.role === "AGENT" || currentUser?.role === "ADMIN") && (
+                <button
+                  type="button"
+                  onClick={() => setOnlyAssignedToMe(true)}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                    onlyAssignedToMe
+                      ? "bg-brand-primary text-white shadow-xs"
+                      : "bg-white text-gray-700 border border-brand-light hover:bg-brand-light"
+                  }`}
+                >
+                  <Target className="w-3.5 h-3.5" />
+                  <span>🎯 Assigned to Me</span>
+                  {assignedCount > 0 && (
+                    <span
+                      className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                        onlyAssignedToMe ? "bg-white text-brand-dark" : "bg-brand-light text-brand-dark"
+                      }`}
+                    >
+                      {assignedCount}
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {onlyAssignedToMe && (
+              <span className="text-[11px] font-semibold text-brand-primary bg-brand-light px-2.5 py-1 rounded-md">
+                Filtering by: Tickets Assigned to You
+              </span>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Search */}
             <div className="relative">

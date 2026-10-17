@@ -113,6 +113,37 @@ export default function NewTicketPage() {
     LOW: 48,
   };
 
+  if (currentUser?.role === "AGENT") {
+    return (
+      <div className="min-h-screen bg-[#F8FAF9] flex flex-col">
+        <Navbar currentUser={currentUser} />
+        <main className="flex-1 max-w-xl w-full mx-auto px-4 py-16 flex flex-col items-center text-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shadow-xs">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-brand-dark">Agent Support Duty Mode</h2>
+          <p className="text-xs text-gray-600 leading-relaxed max-w-md">
+            Support agents resolve and triage customer issues. Standard customer tickets must be submitted by customers or administrators on their behalf.
+          </p>
+          <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/?filter=my_assigned"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-brand-primary hover:bg-brand-dark transition shadow-xs"
+            >
+              🎯 View My Assigned Tickets
+            </Link>
+            <Link
+              href="/"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 bg-white border border-brand-light hover:bg-brand-light transition"
+            >
+              All Active Tickets
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAF9] flex flex-col">
       <Navbar currentUser={currentUser} />

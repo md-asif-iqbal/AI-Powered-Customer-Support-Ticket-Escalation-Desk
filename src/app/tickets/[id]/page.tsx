@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 
 interface TicketDetailData {
-  ticket: ITicket & {
+  ticket: Omit<ITicket, "customer" | "assignedTo" | "assignedAgents"> & {
     customer: { _id: string; name: string; email: string; role: string };
     assignedTo?: { _id: string; name: string; email: string; role: string };
     assignedAgents?: { _id: string; name: string; email: string; role: string }[];
@@ -268,12 +268,53 @@ export default function TicketDetailPage({ params }: PageProps) {
 
   const { ticket, comments, escalationLogs } = data;
   const isAgentOrAdmin = currentUser?.role === "AGENT" || currentUser?.role === "ADMIN";
+  const isAdmin = currentUser?.role === "ADMIN";
+  const isCustomerOwner = currentUser?.role === "CUSTOMER" && ticket.customer?._id === currentUser.userId;
+
+  const isAssignedAgent =
+    currentUser?.role === "AGENT" &&
+    ((ticket.assignedTo &&
+      (typeof ticket.assignedTo === "object"
+        ? (ticket.assignedTo as { _id?: string })._id === currentUser.userId
+        : ticket.assignedTo === currentUser.userId)) ||
+      (ticket.assignedAgents &&
+        ticket.assignedAgents.some((ag) =>
+          typeof ag === "object" ? (ag as { _id?: string })._id === currentUser.userId : ag === currentUser.userId
+        )));
+
+  // If user is an AGENT but not assigned to this ticket, they are in read-only mode!
+  const isUnassignedAgent = currentUser?.role === "AGENT" && !isAssignedAgent;
+  const canModifyTicket = isAdmin || isCustomerOwner || isAssignedAgent;
 
   return (
     <div className="min-h-screen bg-[#F8FAF9] flex flex-col">
       <Navbar currentUser={currentUser} onRefresh={loadTicket} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Unassigned Agent Notice Banner */}
+        {isUnassignedAgent && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center justify-between gap-3 text-xs text-amber-900 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <Lock className="w-5 h-5 text-amber-700 shrink-0" />
+              <div>
+                <span className="font-bold">Read-Only Ticket Access:</span> You are viewing a ticket assigned to{" "}
+                <strong className="underline underline-offset-2">
+                  {ticket.assignedAgents && ticket.assignedAgents.length > 0
+                    ? ticket.assignedAgents.map((a: { name?: string }) => a.name).join(" & ")
+                    : ticket.assignedTo?.name || "another colleague"}
+                </strong>
+                . Support agents cannot resolve, escalate, or reply to tickets assigned to another agent.
+              </div>
+            </div>
+            <Link
+              href="/?filter=my_assigned"
+              className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-brand-primary hover:bg-brand-dark transition shrink-0"
+            >
+              My Assigned Tickets
+            </Link>
+          </div>
+        )}
+
         {/* Top Header Card */}
         <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -345,7 +386,7 @@ export default function TicketDetailPage({ params }: PageProps) {
                     </span>
                   )}
 
-                  {(currentUser?.role === "AGENT" || currentUser?.role === "ADMIN") && (
+                  {(isAdmin || isAssignedAgent) && (
                     <button
                       type="button"
                       onClick={handleOpenAssignModal}
@@ -359,39 +400,46 @@ export default function TicketDetailPage({ params }: PageProps) {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-wrap items-center gap-2">
-              {ticket.status !== "RESOLVED" && ticket.status !== "CLOSED" && (
-                <button
-                  type="button"
-                  onClick={() => handleStatusChange("RESOLVED")}
-                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white rounded-lg shadow-xs transition hover:opacity-95 bg-brand-primary hover:bg-brand-dark"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Mark as Resolved
-                </button>
-              )}
+            {canModifyTicket ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {ticket.status !== "RESOLVED" && ticket.status !== "CLOSED" && (
+                  <button
+                    type="button"
+                    onClick={() => handleStatusChange("RESOLVED")}
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white rounded-lg shadow-xs transition hover:opacity-95 bg-brand-primary hover:bg-brand-dark"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Mark as Resolved
+                  </button>
+                )}
 
-              {ticket.status !== "ESCALATED" && ticket.status !== "CLOSED" && (
-                <button
-                  type="button"
-                  onClick={() => setEscalateModalOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-xs transition"
-                >
-                  <ShieldAlert className="w-4 h-4" />
-                  Escalate Ticket
-                </button>
-              )}
+                {ticket.status !== "ESCALATED" && ticket.status !== "CLOSED" && (
+                  <button
+                    type="button"
+                    onClick={() => setEscalateModalOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-xs transition"
+                  >
+                    <ShieldAlert className="w-4 h-4" />
+                    Escalate Ticket
+                  </button>
+                )}
 
-              {ticket.status === "RESOLVED" && (
-                <button
-                  type="button"
-                  onClick={() => handleStatusChange("OPEN")}
-                  className="px-3 py-2 text-xs font-bold text-gray-700 bg-brand-light hover:bg-gray-200 rounded-lg transition"
-                >
-                  Reopen Ticket
-                </button>
-              )}
-            </div>
+                {ticket.status === "RESOLVED" && (
+                  <button
+                    type="button"
+                    onClick={() => handleStatusChange("OPEN")}
+                    className="px-3 py-2 text-xs font-bold text-gray-700 bg-brand-light hover:bg-gray-200 rounded-lg transition"
+                  >
+                    Reopen Ticket
+                  </button>
+                )}
+              </div>
+            ) : isUnassignedAgent ? (
+              <div className="flex items-center gap-1 px-3 py-2 text-xs font-bold text-amber-800 bg-amber-100 rounded-lg">
+                <Lock className="w-3.5 h-3.5" />
+                <span>Assigned to Other Agent</span>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -482,59 +530,71 @@ export default function TicketDetailPage({ params }: PageProps) {
             </div>
 
             {/* Reply Composer Form */}
-            <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-800">
-                  Write a Response
-                </span>
-                {isAgentOrAdmin && (
-                  <label className="flex items-center gap-2 text-xs font-medium text-amber-800 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isInternalNote}
-                      onChange={(e) => setIsInternalNote(e.target.checked)}
-                      className="rounded text-amber-600 focus:ring-amber-500"
-                    />
-                    <span className="flex items-center gap-1">
-                      <Lock className="w-3.5 h-3.5" />
-                      Internal Staff Note (Customer won&apos;t see)
-                    </span>
-                  </label>
-                )}
-              </div>
-
-              <form onSubmit={handlePostReply} className="space-y-3">
-                <textarea
-                  rows={4}
-                  value={replyMessage}
-                  onChange={(e) => setReplyMessage(e.target.value)}
-                  placeholder={
-                    isInternalNote
-                      ? "Add internal technical notes, findings, or handover details..."
-                      : "Type your reply to the customer..."
-                  }
-                  className="w-full text-xs p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                  required
-                />
-
+            {canModifyTicket ? (
+              <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="text-[11px] text-gray-400">
-                    Pressing send will notify all participants in this ticket.
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={submittingReply}
-                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white rounded-lg shadow-xs transition hover:opacity-95 ${
-                      isInternalNote ? "bg-amber-600" : "bg-brand-dark hover:bg-brand-primary"
-                    }`}
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    {submittingReply ? "Posting..." : isInternalNote ? "Save Internal Note" : "Send Reply"}
-                  </button>
+                  <span className="text-xs font-bold text-gray-800">
+                    Write a Response
+                  </span>
+                  {isAgentOrAdmin && (
+                    <label className="flex items-center gap-2 text-xs font-medium text-amber-800 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isInternalNote}
+                        onChange={(e) => setIsInternalNote(e.target.checked)}
+                        className="rounded text-amber-600 focus:ring-amber-500"
+                      />
+                      <span className="flex items-center gap-1">
+                        <Lock className="w-3.5 h-3.5" />
+                        Internal Staff Note (Customer won&apos;t see)
+                      </span>
+                    </label>
+                  )}
                 </div>
-              </form>
-            </div>
+
+                <form onSubmit={handlePostReply} className="space-y-3">
+                  <textarea
+                    rows={4}
+                    value={replyMessage}
+                    onChange={(e) => setReplyMessage(e.target.value)}
+                    placeholder={
+                      isInternalNote
+                        ? "Add internal technical notes, findings, or handover details..."
+                        : "Type your reply to the customer..."
+                    }
+                    className="w-full text-xs p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                    required
+                  />
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] text-gray-400">
+                      Pressing send will notify all participants in this ticket.
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={submittingReply}
+                      className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white rounded-lg shadow-xs transition hover:opacity-95 ${
+                        isInternalNote ? "bg-amber-600" : "bg-brand-dark hover:bg-brand-primary"
+                      }`}
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      {submittingReply ? "Posting..." : isInternalNote ? "Save Internal Note" : "Send Reply"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : isUnassignedAgent ? (
+              <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light text-center space-y-2">
+                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto text-amber-700">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-bold text-gray-800">Reply & Note Actions Locked</h4>
+                <p className="text-[11px] text-gray-500 max-w-md mx-auto leading-relaxed">
+                  You are viewing this ticket in read-only observation mode. Support agents cannot post customer replies or internal notes on tickets assigned to other colleagues.
+                </p>
+              </div>
+            ) : null}
           </div>
 
           {/* Right Column: AI Copilot & Escalation Audit Trail */}
