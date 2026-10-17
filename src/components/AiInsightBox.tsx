@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { IAiAnalysis } from "@/lib/models/Ticket";
-import { Headset, Copy, Check, Info, ShieldAlert, Cpu, Clock } from "lucide-react";
+import { Headset, Copy, Check, Info, Cpu } from "lucide-react";
 
 interface AiInsightBoxProps {
   aiAnalysis?: IAiAnalysis | null;
@@ -179,60 +179,7 @@ export function AiInsightBox({
         </div>
       </div>
 
-      {/* Auto-Assignment Notification */}
-      {aiAnalysis.autoAssigned && (
-        <div className="p-3 rounded-lg bg-brand-mint/15 border border-brand-mint/40 text-brand-dark flex items-start gap-2 text-xs">
-          <Headset className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
-          <div>
-            <strong className="font-bold">
-              {aiAnalysis.assignedAgentNames && aiAnalysis.assignedAgentNames.length > 1
-                ? "🤖 AI Priority Multi-Agent Dispatch: "
-                : "🤖 AI Auto-Assignment: "}
-            </strong>
-            <span>
-              {aiAnalysis.assignedAgentNames && aiAnalysis.assignedAgentNames.length > 1 ? (
-                <>
-                  Assigned multi-agent response team:{" "}
-                  <strong className="underline decoration-brand-mint">
-                    {aiAnalysis.assignedAgentNames.join(" & ")}
-                  </strong>{" "}
-                  for accelerated cross-functional resolution.
-                </>
-              ) : (
-                <>
-                  Directly routed & assigned to{" "}
-                  <strong className="underline decoration-brand-mint">
-                    {aiAnalysis.assignedAgentName || "Dedicated Support Agent"}
-                  </strong>{" "}
-                  via real-time workload balancing.
-                </>
-              )}
-            </span>
-          </div>
-        </div>
-      )}
 
-      {/* Auto Escalation Alert */}
-      {aiAnalysis.autoEscalateRecommended && (
-        <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-900 flex items-start gap-2 text-xs">
-          <ShieldAlert className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-          <div>
-            <strong className="font-bold">Auto-Escalation Triggered: </strong>
-            <span>{aiAnalysis.escalationReason || "High frustration/urgency threshold reached."}</span>
-          </div>
-        </div>
-      )}
-
-      {/* 15-Minute Response SLA Watchdog Rule */}
-      <div className="p-3 rounded-lg bg-brand-light/60 border border-brand-light text-brand-dark flex items-start gap-2 text-xs">
-        <Clock className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
-        <div>
-          <strong className="font-bold">⚡ AI Response SLA Watchdog: </strong>
-          <span className="text-gray-700">
-            Assigned agents have 10–15 minutes to send their first response. If unresponsive, AI automatically switches and reassigns this ticket to the next available agent with lowest active load.
-          </span>
-        </div>
-      </div>
 
       {/* Suggested Reply Draft */}
       {aiAnalysis.suggestedReply && (
