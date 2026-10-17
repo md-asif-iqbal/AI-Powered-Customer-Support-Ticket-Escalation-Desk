@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Support & Escalation Desk",
-  description: "Intelligent Customer Support, SLA Tracking & AI Ticket Escalation Platform",
+  title: "OmniDesk AI — Intelligent Customer Support & SLA Escalation Desk",
+  description: "AI-Powered Customer Support, SLA Tracking & Automated Ticket Escalation Platform",
 };
 
 export default function RootLayout({

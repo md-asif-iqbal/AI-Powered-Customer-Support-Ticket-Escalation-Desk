@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ShieldAlert,
+  MonitorCheck,
   PlusCircle,
   LogOut,
   Menu,
@@ -55,11 +55,11 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-xs shrink-0 bg-brand-dark">
-              <ShieldAlert className="w-5 h-5 text-brand-mint" />
+              <MonitorCheck className="w-5 h-5 text-brand-mint" />
             </div>
             <div>
               <span className="font-extrabold text-lg text-brand-dark tracking-tight block leading-tight">
-                NT Desk<span className="text-brand-primary">AI</span>
+                OmniDesk<span className="text-brand-primary"> AI</span>
               </span>
               <span className="text-[10px] text-gray-500 font-medium block">
                 SLA & Escalation Hub

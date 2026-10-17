@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShieldAlert, ArrowRight, UserCheck, Shield, Lock, Mail } from "lucide-react";
+import { MonitorCheck, ArrowRight, UserCheck, Shield, Lock, Mail } from "lucide-react";
 import { signInWithGoogle, loginWithEmailFirebase } from "@/lib/firebase";
 import { setToken, apiFetch } from "@/lib/api";
 
@@ -123,10 +123,10 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#F8FAF9]">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="mx-auto w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md mb-4 bg-brand-dark">
-          <ShieldAlert className="w-6 h-6 text-brand-mint" />
+          <MonitorCheck className="w-6 h-6 text-brand-mint" />
         </div>
         <h2 className="text-2xl font-black text-brand-dark tracking-tight">
-          NT Desk<span className="text-brand-primary">AI</span>
+          OmniDesk<span className="text-brand-primary"> AI</span>
         </h2>
         <p className="mt-1 text-xs text-gray-500 font-medium">
           Sign in to access AI-Powered Customer Support & Escalation Hub
@@ -258,7 +258,7 @@ export default function LoginPage() {
                 className="p-2 text-left bg-brand-light hover:bg-gray-200 rounded-lg transition border border-gray-200"
               >
                 <div className="flex items-center gap-1.5 text-xs font-bold text-brand-dark">
-                  <ShieldAlert className="w-3.5 h-3.5 text-brand-mint" />
+                  <Shield className="w-3.5 h-3.5 text-brand-mint" />
                   Admin
                 </div>
                 <div className="text-[10px] text-gray-500 truncate">Alex Mercer</div>
