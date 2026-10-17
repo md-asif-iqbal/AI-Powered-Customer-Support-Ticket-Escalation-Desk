@@ -32,16 +32,19 @@ export default function RegisterPage() {
 
       if (firebaseUser) {
         // Sync with backend
-        const syncRes = await apiFetch<{ token: string }>("/auth/firebase-sync", {
-          method: "POST",
-          body: JSON.stringify({
-            email: firebaseUser.email,
-            name: name || firebaseUser.displayName || email.split("@")[0],
-            firebaseUid: firebaseUser.uid,
-            authProvider: "FIREBASE",
-            role,
-          }),
-        });
+        const syncRes = await apiFetch<{ token: string }>(
+          "/auth/firebase-sync",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              email: firebaseUser.email,
+              name: name || firebaseUser.displayName || email.split("@")[0],
+              firebaseUid: firebaseUser.uid,
+              authProvider: "FIREBASE",
+              role,
+            }),
+          },
+        );
         if (syncRes.token) setToken(syncRes.token);
       } else {
         // Direct backend register
@@ -102,7 +105,7 @@ export default function RegisterPage() {
           Create an Account
         </h2>
         <p className="mt-1 text-xs text-gray-500 font-medium">
-          Join the OmniDesk AI Support & SLA Escalation Platform
+          Join the Help Desk AI Support & SLA Escalation Platform
         </p>
       </div>
 
@@ -246,7 +249,10 @@ export default function RegisterPage() {
 
           <div className="text-center text-xs text-gray-500">
             Already registered?{" "}
-            <Link href="/login" className="font-bold text-brand-dark hover:underline">
+            <Link
+              href="/login"
+              className="font-bold text-brand-dark hover:underline"
+            >
               Sign In here
             </Link>
           </div>

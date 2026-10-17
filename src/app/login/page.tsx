@@ -3,7 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MonitorCheck, ArrowRight, UserCheck, Shield, Lock, Mail } from "lucide-react";
+import {
+  MonitorCheck,
+  ArrowRight,
+  UserCheck,
+  Shield,
+  Lock,
+  Mail,
+} from "lucide-react";
 import { signInWithGoogle, loginWithEmailFirebase } from "@/lib/firebase";
 import { setToken, apiFetch } from "@/lib/api";
 
@@ -31,15 +38,18 @@ export default function LoginPage() {
 
       if (firebaseUser) {
         // Sync with backend
-        const syncRes = await apiFetch<{ token: string }>("/auth/firebase-sync", {
-          method: "POST",
-          body: JSON.stringify({
-            email: firebaseUser.email,
-            name: firebaseUser.displayName || email.split("@")[0],
-            firebaseUid: firebaseUser.uid,
-            authProvider: "FIREBASE",
-          }),
-        });
+        const syncRes = await apiFetch<{ token: string }>(
+          "/auth/firebase-sync",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              email: firebaseUser.email,
+              name: firebaseUser.displayName || email.split("@")[0],
+              firebaseUid: firebaseUser.uid,
+              authProvider: "FIREBASE",
+            }),
+          },
+        );
         if (syncRes.token) setToken(syncRes.token);
       } else {
         // Direct backend auth
@@ -53,7 +63,11 @@ export default function LoginPage() {
       router.push("/");
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Authentication failed. Check credentials.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Authentication failed. Check credentials.",
+      );
       setLoading(false);
     }
   };
@@ -66,7 +80,9 @@ export default function LoginPage() {
     try {
       const googleUser = await signInWithGoogle();
       if (!googleUser || !googleUser.email) {
-        throw new Error("Google Sign-In was cancelled or failed to retrieve email.");
+        throw new Error(
+          "Google Sign-In was cancelled or failed to retrieve email.",
+        );
       }
 
       // Sync with MongoDB backend
@@ -126,7 +142,7 @@ export default function LoginPage() {
           <MonitorCheck className="w-6 h-6 text-brand-mint" />
         </div>
         <h2 className="text-2xl font-black text-brand-dark tracking-tight">
-          OmniDesk<span className="text-brand-primary"> AI</span>
+          Help Desk<span className="text-brand-primary"> AI</span>
         </h2>
         <p className="mt-1 text-xs text-gray-500 font-medium">
           Sign in to access AI-Powered Customer Support & Escalation Hub
@@ -237,7 +253,9 @@ export default function LoginPage() {
                   <UserCheck className="w-3.5 h-3.5 text-brand-primary" />
                   Customer
                 </div>
-                <div className="text-[10px] text-gray-500 truncate">John Doe</div>
+                <div className="text-[10px] text-gray-500 truncate">
+                  John Doe
+                </div>
               </button>
 
               <button
@@ -249,7 +267,9 @@ export default function LoginPage() {
                   <Shield className="w-3.5 h-3.5" />
                   Agent
                 </div>
-                <div className="text-[10px] text-gray-500 truncate">Sarah Connor</div>
+                <div className="text-[10px] text-gray-500 truncate">
+                  Sarah Connor
+                </div>
               </button>
 
               <button
@@ -261,14 +281,19 @@ export default function LoginPage() {
                   <Shield className="w-3.5 h-3.5 text-brand-mint" />
                   Admin
                 </div>
-                <div className="text-[10px] text-gray-500 truncate">Alex Mercer</div>
+                <div className="text-[10px] text-gray-500 truncate">
+                  Alex Mercer
+                </div>
               </button>
             </div>
           </div>
 
           <div className="text-center text-xs text-gray-500">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-bold text-brand-primary hover:underline">
+            <Link
+              href="/register"
+              className="font-bold text-brand-primary hover:underline"
+            >
               Create a free account
             </Link>
           </div>

@@ -116,50 +116,65 @@ export function AiInsightBox({
         </div>
       )}
 
-      {/* Metric Badges Grid - Designed to never collide or overflow even in narrow sidebars */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        {/* Sentiment */}
-        <div className="p-3 rounded-lg border border-brand-light bg-brand-light/30 flex flex-col justify-between overflow-hidden">
-          <div className="flex items-center justify-between text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-            <span>Sentiment</span>
-            <span className="font-mono text-gray-700 font-bold normal-case text-xs">
-              Score: {aiAnalysis.sentimentScore > 0 ? `+${aiAnalysis.sentimentScore}` : aiAnalysis.sentimentScore}
+      {/* Metric Cards - Pixel-perfect stacked layout with zero text clipping on any screen */}
+      <div className="space-y-3">
+        {/* Sentiment Card */}
+        <div className="p-3.5 rounded-xl border border-brand-light bg-brand-light/30 flex items-center justify-between gap-3">
+          <div className="space-y-1 min-w-0">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
+              Detected Sentiment
             </span>
-          </div>
-          <div>
-            <span className={`inline-block px-2.5 py-0.5 rounded text-xs font-bold border ${sentimentClasses}`}>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold border ${sentimentClasses}`}>
               {aiAnalysis.sentiment}
             </span>
           </div>
-        </div>
-
-        {/* Urgency Score */}
-        <div className="p-3 rounded-lg border border-brand-light bg-brand-light/30 flex flex-col justify-between overflow-hidden">
-          <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
-            Urgency Score
-          </span>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-brand-light h-2 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full ${aiAnalysis.urgencyScore >= 75 ? "bg-red-600" : "bg-brand-primary"}`}
-                style={{ width: `${aiAnalysis.urgencyScore}%` }}
-              />
-            </div>
-            <span className="text-xs font-mono font-bold text-gray-800 shrink-0">
-              {aiAnalysis.urgencyScore}/100
+          <div className="text-right shrink-0">
+            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider block">
+              Confidence
+            </span>
+            <span className="text-xs font-mono font-black text-gray-800">
+              Score: {aiAnalysis.sentimentScore > 0 ? `+${aiAnalysis.sentimentScore}` : aiAnalysis.sentimentScore}
             </span>
           </div>
         </div>
 
-        {/* AI Recommendations */}
-        <div className="p-3 rounded-lg border border-brand-light bg-brand-light/30 flex flex-col justify-between overflow-hidden">
-          <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
-            AI Triage
-          </span>
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-800 flex-wrap">
-            <span className="whitespace-nowrap">{aiAnalysis.recommendedPriority} Priority</span>
-            <span className="text-gray-400">•</span>
-            <span className="truncate">{aiAnalysis.recommendedCategory}</span>
+        {/* Urgency Score Card */}
+        <div className="p-3.5 rounded-xl border border-brand-light bg-brand-light/30 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+              Urgency Level
+            </span>
+            <span className="font-mono text-gray-900 font-black text-xs">
+              {aiAnalysis.urgencyScore} / 100
+            </span>
+          </div>
+          <div className="w-full bg-brand-light h-2 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                aiAnalysis.urgencyScore >= 75 ? "bg-red-600" : "bg-brand-primary"
+              }`}
+              style={{ width: `${Math.min(100, Math.max(0, aiAnalysis.urgencyScore))}%` }}
+            />
+          </div>
+        </div>
+
+        {/* AI Recommendations Card */}
+        <div className="p-3.5 rounded-xl border border-brand-light bg-brand-light/30 flex items-center justify-between gap-3">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-1">
+              Recommended Priority
+            </span>
+            <span className="text-xs font-bold text-gray-900">
+              {aiAnalysis.recommendedPriority} Priority
+            </span>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-1">
+              Category
+            </span>
+            <span className="text-xs font-bold text-brand-dark px-2.5 py-0.5 rounded-md bg-brand-mint/20 border border-brand-mint/40">
+              {aiAnalysis.recommendedCategory}
+            </span>
           </div>
         </div>
       </div>

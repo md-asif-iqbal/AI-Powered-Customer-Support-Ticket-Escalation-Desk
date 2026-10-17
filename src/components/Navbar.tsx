@@ -3,13 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  MonitorCheck,
-  PlusCircle,
-  LogOut,
-  Menu,
-  X,
-} from "lucide-react";
+import { MonitorCheck, PlusCircle, LogOut, Menu, X } from "lucide-react";
 import { removeToken } from "@/lib/api";
 import { logoutFromFirebase } from "@/lib/firebase";
 
@@ -46,7 +40,9 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
     ADMIN: "bg-brand-dark text-white",
   };
 
-  const currentRoleClass = currentUser?.role ? roleClasses[currentUser.role] : roleClasses.CUSTOMER;
+  const currentRoleClass = currentUser?.role
+    ? roleClasses[currentUser.role]
+    : roleClasses.CUSTOMER;
 
   return (
     <header className="sticky top-0 z-50 shadow-xs border-b border-brand-light bg-white">
@@ -59,7 +55,7 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
             </div>
             <div>
               <span className="font-extrabold text-lg text-brand-dark tracking-tight block leading-tight">
-                OmniDesk<span className="text-brand-primary"> AI</span>
+                Help Desk<span className="text-brand-primary"> AI</span>
               </span>
               <span className="text-[10px] text-gray-500 font-medium block">
                 SLA & Escalation Hub
@@ -91,10 +87,16 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-right">
                   <div>
-                    <div className="text-xs font-bold text-gray-900">{currentUser.name}</div>
-                    <div className="text-[11px] text-gray-500">{currentUser.email}</div>
+                    <div className="text-xs font-bold text-gray-900">
+                      {currentUser.name}
+                    </div>
+                    <div className="text-[11px] text-gray-500">
+                      {currentUser.email}
+                    </div>
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${currentRoleClass}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${currentRoleClass}`}
+                  >
                     {currentUser.role}
                   </span>
                 </div>
@@ -132,7 +134,11 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
               className="p-2 rounded-lg text-gray-600 hover:bg-brand-light"
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -160,10 +166,16 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
             <div className="pt-2 border-t border-brand-light space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <div>
-                  <span className="font-bold text-gray-900 block">{currentUser.name}</span>
-                  <span className="text-gray-500 block">{currentUser.email}</span>
+                  <span className="font-bold text-gray-900 block">
+                    {currentUser.name}
+                  </span>
+                  <span className="text-gray-500 block">
+                    {currentUser.email}
+                  </span>
                 </div>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${currentRoleClass}`}>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${currentRoleClass}`}
+                >
                   {currentUser.role}
                 </span>
               </div>
