@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { IAiAnalysis } from "@/lib/models/Ticket";
-import { Headset, Copy, Check, Info, ShieldAlert, Cpu } from "lucide-react";
+import { Headset, Copy, Check, Info, ShieldAlert, Cpu, Clock } from "lucide-react";
 
 interface AiInsightBoxProps {
   aiAnalysis?: IAiAnalysis | null;
@@ -222,6 +222,17 @@ export function AiInsightBox({
           </div>
         </div>
       )}
+
+      {/* 15-Minute Response SLA Watchdog Rule */}
+      <div className="p-3 rounded-lg bg-brand-light/60 border border-brand-light text-brand-dark flex items-start gap-2 text-xs">
+        <Clock className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+        <div>
+          <strong className="font-bold">⚡ AI Response SLA Watchdog: </strong>
+          <span className="text-gray-700">
+            Assigned agents have 10–15 minutes to send their first response. If unresponsive, AI automatically switches and reassigns this ticket to the next available agent with lowest active load.
+          </span>
+        </div>
+      </div>
 
       {/* Suggested Reply Draft */}
       {aiAnalysis.suggestedReply && (

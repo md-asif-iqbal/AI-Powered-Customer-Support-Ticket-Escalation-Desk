@@ -156,6 +156,18 @@ export default function TicketDetailPage({ params }: PageProps) {
     }
   };
 
+  const handleTriggerInactivityCheck = async () => {
+    try {
+      await apiFetch("/tickets/check-inactivity", {
+        method: "POST",
+        body: JSON.stringify({ thresholdMinutes: 15 }),
+      });
+      await loadTicket();
+    } catch (err) {
+      console.error("Failed to trigger inactivity check:", err);
+    }
+  };
+
   useEffect(() => {
     apiFetch<{ user: typeof currentUser }>("/auth/me")
       .then((authData) => {
@@ -386,14 +398,46 @@ export default function TicketDetailPage({ params }: PageProps) {
                     </span>
                   )}
 
+                  {ticket.status !== "RESOLVED" && ticket.status !== "CLOSED" && (
+                    <>
+                      {ticket.firstResponseAt ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-brand-mint">
+                          <CheckCircle className="w-3 h-3 text-emerald-600" />
+                          First Reply Sent
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-300">
+                          <Clock className="w-3 h-3 text-amber-700" />
+                          15m Inactivity Auto-Switch Active
+                        </span>
+                      )}
+                    </>
+                  )}
+
+                  {ticket.reassignmentCount && ticket.reassignmentCount > 0 ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-900 border border-purple-300">
+                      🔄 AI Auto-Switched ({ticket.reassignmentCount}x)
+                    </span>
+                  ) : null}
+
                   {(isAdmin || isAssignedAgent) && (
-                    <button
-                      type="button"
-                      onClick={handleOpenAssignModal}
-                      className="ml-1 text-[11px] font-bold text-brand-primary hover:text-brand-dark underline underline-offset-2"
-                    >
-                      + Manage / Co-Assign
-                    </button>
+                    <div className="inline-flex items-center gap-2 ml-1">
+                      <button
+                        type="button"
+                        onClick={handleOpenAssignModal}
+                        className="text-[11px] font-bold text-brand-primary hover:text-brand-dark underline underline-offset-2"
+                      >
+                        + Manage Team
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleTriggerInactivityCheck}
+                        title="Evaluate 15-minute response rule immediately"
+                        className="text-[10px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-0.5 rounded transition"
+                      >
+                        ⚡ Test Inactivity Check
+                      </button>
+                    </div>
                   )}
                 </span>
               </div>
