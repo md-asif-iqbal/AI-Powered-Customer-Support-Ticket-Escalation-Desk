@@ -184,11 +184,29 @@ export function AiInsightBox({
         <div className="p-3 rounded-lg bg-brand-mint/15 border border-brand-mint/40 text-brand-dark flex items-start gap-2 text-xs">
           <Headset className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
           <div>
-            <strong className="font-bold">🤖 AI Auto-Assignment: </strong>
+            <strong className="font-bold">
+              {aiAnalysis.assignedAgentNames && aiAnalysis.assignedAgentNames.length > 1
+                ? "🤖 AI Priority Multi-Agent Dispatch: "
+                : "🤖 AI Auto-Assignment: "}
+            </strong>
             <span>
-              Directly routed & assigned to{" "}
-              <strong className="underline decoration-brand-mint">{aiAnalysis.assignedAgentName || "Dedicated Support Agent"}</strong>{" "}
-              via real-time workload balancing.
+              {aiAnalysis.assignedAgentNames && aiAnalysis.assignedAgentNames.length > 1 ? (
+                <>
+                  Assigned multi-agent response team:{" "}
+                  <strong className="underline decoration-brand-mint">
+                    {aiAnalysis.assignedAgentNames.join(" & ")}
+                  </strong>{" "}
+                  for accelerated cross-functional resolution.
+                </>
+              ) : (
+                <>
+                  Directly routed & assigned to{" "}
+                  <strong className="underline decoration-brand-mint">
+                    {aiAnalysis.assignedAgentName || "Dedicated Support Agent"}
+                  </strong>{" "}
+                  via real-time workload balancing.
+                </>
+              )}
             </span>
           </div>
         </div>

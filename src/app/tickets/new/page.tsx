@@ -306,7 +306,17 @@ export default function NewTicketPage() {
                     <div className="p-2.5 bg-brand-primary/10 border border-brand-primary/30 rounded-lg text-[11px] text-brand-dark flex items-start gap-2">
                       <Headset className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
                       <span>
-                        <strong>AI Auto-Assignment: </strong> Automatically assigns ticket to the least-loaded support agent upon submit.
+                        {priority === "URGENT" || liveAi.urgencyScore >= 75 ? (
+                          <>
+                            <strong>AI Priority Multi-Agent Dispatch: </strong>
+                            Critical urgency detected. Will auto-assign a <strong>Dual-Agent Team (Lead + Co-Pilot)</strong> from available staff.
+                          </>
+                        ) : (
+                          <>
+                            <strong>AI Auto-Assignment: </strong>
+                            Automatically assigns ticket to the least-loaded available agent based on real-time capacity.
+                          </>
+                        )}
                       </span>
                     </div>
                   </div>

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MonitorCheck, PlusCircle, LogOut, Menu, X } from "lucide-react";
+import { MonitorCheck, PlusCircle, LogOut, Menu, X, Trophy } from "lucide-react";
 import { removeToken } from "@/lib/api";
 import { logoutFromFirebase } from "@/lib/firebase";
 
@@ -64,12 +64,20 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             <Link
               href="/"
               className="text-sm font-semibold text-gray-700 hover:text-brand-dark px-3 py-2 rounded-lg transition"
             >
               Tickets Dashboard
+            </Link>
+
+            <Link
+              href="/leaderboard"
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-brand-dark px-3 py-2 rounded-lg transition"
+            >
+              <Trophy className="w-4 h-4 text-amber-500" />
+              Leaderboard
             </Link>
 
             <Link
@@ -153,6 +161,14 @@ export function Navbar({ currentUser, onRefresh: _onRefresh }: NavbarProps) {
             className="block text-sm font-semibold text-gray-800 py-2 border-b border-brand-light"
           >
             Dashboard
+          </Link>
+          <Link
+            href="/leaderboard"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2 text-sm font-semibold text-gray-800 py-2 border-b border-brand-light"
+          >
+            <Trophy className="w-4 h-4 text-amber-500" />
+            Agent Leaderboard
           </Link>
           <Link
             href="/tickets/new"
