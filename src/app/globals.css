@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #1F6F5F;
+  --color-brand-primary: #2FA084;
+  --color-brand-mint: #6FCF97;
+  --color-brand-light: #EEEEEE;
+}
+
+:root {
+  --color-brand-dark: #1F6F5F;
+  --color-brand-primary: #2FA084;
+  --color-brand-mint: #6FCF97;
+  --color-brand-light: #EEEEEE;
+  --background: #F8FAF9;
+  --foreground: #111827;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-brand-light);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand-primary);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-dark);
+}
+
+/* Global Semantic Color Utility Classes */
+.bg-brand-dark { background-color: var(--color-brand-dark) !important; }
+.bg-brand-primary { background-color: var(--color-brand-primary) !important; }
+.bg-brand-mint { background-color: var(--color-brand-mint) !important; }
+.bg-brand-light { background-color: var(--color-brand-light) !important; }
+
+.text-brand-dark { color: var(--color-brand-dark) !important; }
+.text-brand-primary { color: var(--color-brand-primary) !important; }
+.text-brand-mint { color: var(--color-brand-mint) !important; }
+.text-brand-light { color: var(--color-brand-light) !important; }
+
+.border-brand-dark { border-color: var(--color-brand-dark) !important; }
+.border-brand-primary { border-color: var(--color-brand-primary) !important; }
+.border-brand-mint { border-color: var(--color-brand-mint) !important; }
+.border-brand-light { border-color: var(--color-brand-light) !important; }
+
+.hover\:bg-brand-dark:hover { background-color: #17574a !important; }
+.hover\:bg-brand-primary:hover { background-color: #26876f !important; }
+.hover\:text-brand-dark:hover { color: var(--color-brand-dark) !important; }
+.hover\:text-brand-primary:hover { color: var(--color-brand-primary) !important; }
