@@ -223,10 +223,14 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-brand-dark tracking-tight">
-              Support & Escalation Operations
+              {currentUser?.role === "CUSTOMER"
+                ? "My Support Tickets"
+                : "Support & Escalation Operations"}
             </h1>
             <p className="text-xs text-gray-500 mt-1">
-              Real-time ticket tracking, SLA countdowns, and AI-powered sentiment triage.
+              {currentUser?.role === "CUSTOMER"
+                ? "Track your raised tickets, view SLA response times, and reply directly to your assigned agents."
+                : "Real-time ticket tracking, SLA countdowns, and AI-powered sentiment triage."}
             </p>
           </div>
 
@@ -234,14 +238,14 @@ export default function DashboardPage() {
             {currentUser?.role !== "AGENT" ? (
               <Link
                 href="/tickets/new"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-xs transition hover:opacity-95 bg-brand-primary"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-xs transition hover:opacity-95 bg-brand-primary whitespace-nowrap shrink-0"
               >
-                <PlusCircle className="w-4 h-4" />
+                <PlusCircle className="w-4 h-4 shrink-0" />
                 Create Ticket
               </Link>
             ) : (
-              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-light text-brand-dark border border-brand-mint/40">
-                <Headset className="w-4 h-4 text-brand-primary" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-light text-brand-dark border border-brand-mint/40 whitespace-nowrap shrink-0">
+                <Headset className="w-4 h-4 text-brand-primary shrink-0" />
                 <span>Agent Support Workspace</span>
               </div>
             )}
@@ -323,7 +327,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setOnlyAssignedToMe(false)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap shrink-0 ${
                   !onlyAssignedToMe
                     ? "bg-brand-dark text-white shadow-xs"
                     : "bg-white text-gray-700 border border-brand-light hover:bg-brand-light"
@@ -336,17 +340,17 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => setOnlyAssignedToMe(true)}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap shrink-0 ${
                     onlyAssignedToMe
                       ? "bg-brand-primary text-white shadow-xs"
                       : "bg-white text-gray-700 border border-brand-light hover:bg-brand-light"
                   }`}
                 >
-                  <Target className="w-3.5 h-3.5" />
+                  <Target className="w-3.5 h-3.5 shrink-0" />
                   <span>🎯 Assigned to Me</span>
                   {assignedCount > 0 && (
                     <span
-                      className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                      className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black shrink-0 ${
                         onlyAssignedToMe ? "bg-white text-brand-dark" : "bg-brand-light text-brand-dark"
                       }`}
                     >
@@ -542,21 +546,21 @@ export default function DashboardPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenTeamModal(t)}
-                              className="text-[11px] font-bold text-brand-primary hover:text-brand-dark hover:underline underline-offset-2 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-brand-light/70 border border-brand-mint/30 transition hover:bg-brand-mint/20"
+                              className="text-[11px] font-bold text-brand-primary hover:text-brand-dark hover:underline underline-offset-2 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-brand-light/70 border border-brand-mint/30 transition hover:bg-brand-mint/20 whitespace-nowrap shrink-0"
                             >
-                              <Users className="w-3.5 h-3.5 text-brand-primary" />
+                              <Users className="w-3.5 h-3.5 text-brand-primary shrink-0" />
                               Manage Team
                             </button>
 
                             {assignSuccessTicketId === t._id && (
-                              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1 whitespace-nowrap shrink-0">
                                 <Check className="w-3 h-3 text-emerald-600" />
                                 Assigned!
                               </span>
                             )}
 
                             {assigningTicketId === t._id && (
-                              <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                              <span className="text-[11px] text-gray-500 flex items-center gap-1 whitespace-nowrap shrink-0">
                                 <div className="w-3 h-3 border-2 border-brand-primary border-t-transparent rounded-full animate-spin" />
                                 Updating...
                               </span>
@@ -570,10 +574,10 @@ export default function DashboardPage() {
                         <SlaBadge slaStatus={t.slaStatus} />
                         <Link
                           href={`/tickets/${t._id}`}
-                          className="flex items-center gap-1 text-xs font-bold text-brand-primary group-hover:translate-x-1 transition"
+                          className="flex items-center gap-1 text-xs font-bold text-brand-primary group-hover:translate-x-1 transition whitespace-nowrap shrink-0"
                         >
                           <span>View</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                         </Link>
                       </div>
                     </div>
@@ -652,7 +656,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setTeamModalTicket(null)}
-                className="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-gray-800 rounded-lg hover:bg-brand-light transition"
+                className="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-gray-800 rounded-lg hover:bg-brand-light transition whitespace-nowrap shrink-0"
               >
                 Cancel
               </button>
@@ -660,7 +664,7 @@ export default function DashboardPage() {
                 type="button"
                 disabled={savingTeam}
                 onClick={handleSaveTeam}
-                className="px-4 py-1.5 text-xs font-bold text-white bg-brand-primary hover:bg-brand-dark rounded-lg transition disabled:opacity-50"
+                className="px-4 py-1.5 text-xs font-bold text-white bg-brand-primary hover:bg-brand-dark rounded-lg transition disabled:opacity-50 whitespace-nowrap shrink-0"
               >
                 {savingTeam ? "Saving..." : "Save Assignees"}
               </button>

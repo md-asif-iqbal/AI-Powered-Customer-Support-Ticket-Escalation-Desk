@@ -10,12 +10,12 @@ import {
   Clock,
   ShieldAlert,
   ArrowLeft,
+  ArrowRight,
   CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
 import { analyzeTicketHeuristically } from "@/lib/ai-service";
 import { apiFetch } from "@/lib/api";
-import { ITicket } from "@/lib/models/Ticket";
 
 export default function NewTicketPage() {
   const router = useRouter();
@@ -34,6 +34,15 @@ export default function NewTicketPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [createdTicketInfo, setCreatedTicketInfo] = useState<{
+    id: string;
+    ticketNumber: string;
+    assignedToName: string;
+    category: string;
+    priority: string;
+    slaHours: number;
+    autoEscalated: boolean;
+  } | null>(null);
 
   const [liveAi, setLiveAi] = useState<{
     sentiment: string;
@@ -91,15 +100,39 @@ export default function NewTicketPage() {
     setLoading(true);
 
     try {
-      const data = await apiFetch<{ ticket: ITicket }>("/tickets", {
+      const data = await apiFetch<{
+        ticket: { _id: string; ticketNumber: string; category: typeof category; priority: typeof priority; slaHours?: number };
+        autoEscalated?: boolean;
+        autoAssigned?: boolean;
+        assignedTo?: string;
+        assignedAgents?: string[];
+      }>("/tickets", {
         method: "POST",
         body: JSON.stringify({ title, description, category, priority }),
       });
 
+      const assignedDisplay =
+        data.assignedAgents && data.assignedAgents.length > 0
+          ? data.assignedAgents.join(" & ")
+          : data.assignedTo || "AI Availability Queue (Sarah Agent)";
+
+      const ticketId = String(data.ticket._id);
+
+      setCreatedTicketInfo({
+        id: ticketId,
+        ticketNumber: data.ticket.ticketNumber,
+        assignedToName: assignedDisplay,
+        category: data.ticket.category,
+        priority: data.ticket.priority,
+        slaHours: data.ticket.slaHours || slaHoursPreview[priority],
+        autoEscalated: Boolean(data.autoEscalated),
+      });
+
       setSuccess(true);
+
       setTimeout(() => {
-        router.push(`/tickets/${data.ticket._id}`);
-      }, 1000);
+        router.push(`/tickets/${ticketId}?created=true`);
+      }, 2500);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to create ticket");
       setLoading(false);
@@ -172,8 +205,76 @@ export default function NewTicketPage() {
           </div>
         )}
 
+        {/* Prominent Floating Toast Confirmation Modal */}
+        {success && createdTicketInfo && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border-2 border-brand-mint space-y-5 text-center animate-in fade-in zoom-in-95 duration-200">
+              <div className="w-16 h-16 rounded-2xl bg-brand-light flex items-center justify-center mx-auto text-brand-primary border border-brand-mint shadow-inner">
+                <CheckCircle2 className="w-10 h-10 text-brand-primary animate-bounce" />
+              </div>
+
+              <div>
+                <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 inline-block mb-2 whitespace-nowrap">
+                  ✓ Ticket Raised Successfully!
+                </span>
+                <h3 className="text-xl font-black text-brand-dark">
+                  Ticket #{createdTicketInfo.ticketNumber}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Your ticket has been logged and instantly prioritized by AI Dispatch.
+                </p>
+              </div>
+
+              <div className="p-4 bg-brand-light/50 rounded-2xl border border-brand-light text-left space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Priority:</span>
+                  <span className="font-bold text-gray-900 px-2 py-0.5 rounded bg-white border border-brand-light whitespace-nowrap">
+                    {createdTicketInfo.priority}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Assigned Support:</span>
+                  <span className="font-bold text-brand-dark flex items-center gap-1 whitespace-nowrap">
+                    <Headset className="w-3.5 h-3.5 text-brand-primary shrink-0" />
+                    <span>{createdTicketInfo.assignedToName}</span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Guaranteed Response:</span>
+                  <span className="font-bold text-brand-primary whitespace-nowrap">
+                    Within {createdTicketInfo.slaHours} Hours
+                  </span>
+                </div>
+                {createdTicketInfo.autoEscalated && (
+                  <div className="pt-2 border-t border-brand-light text-[11px] text-red-600 font-bold flex items-center gap-1">
+                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                    Auto-Escalated directly to Senior Tech Lead!
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5 pt-1">
+                <div className="w-full bg-brand-light h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-brand-primary h-full rounded-full transition-all duration-1000" style={{ width: "100%" }} />
+                </div>
+                <p className="text-[11px] text-gray-400">
+                  Opening ticket room now...
+                </p>
+              </div>
+
+              <Link
+                href={`/tickets/${createdTicketInfo.id}?created=true`}
+                className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-xs font-bold text-white bg-brand-primary hover:bg-brand-dark shadow-xs transition whitespace-nowrap shrink-0"
+              >
+                <span>View Ticket Room</span>
+                <ArrowRight className="w-4 h-4 shrink-0" />
+              </Link>
+            </div>
+          </div>
+        )}
+
         {success && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-brand-mint text-brand-dark text-xs rounded-xl flex items-center gap-2">
+          <div className="mb-6 p-4 bg-emerald-50 border border-brand-mint text-brand-dark text-xs rounded-xl flex items-center gap-2 shadow-xs">
             <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0" />
             <span className="font-bold">Ticket created successfully! Redirecting to ticket room...</span>
           </div>
@@ -260,10 +361,10 @@ export default function NewTicketPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-xs font-bold text-white shadow-xs transition hover:opacity-95 bg-brand-primary hover:bg-brand-dark"
+                className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-xs font-bold text-white shadow-xs transition hover:opacity-95 bg-brand-primary hover:bg-brand-dark whitespace-nowrap shrink-0"
               >
-                <Send className="w-4 h-4" />
-                {loading ? "Analyzing & Submitting Ticket..." : "Submit Support Ticket"}
+                <Send className="w-4 h-4 shrink-0" />
+                <span>{loading ? "Analyzing & Submitting Ticket..." : "Submit Support Ticket"}</span>
               </button>
             </form>
           </div>

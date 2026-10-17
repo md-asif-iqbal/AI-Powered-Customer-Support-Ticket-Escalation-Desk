@@ -95,28 +95,28 @@ export function Navbar({ currentUser, assignedTicketsCount, onRefresh }: NavbarP
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/"
-              className="text-sm font-semibold text-gray-700 hover:text-brand-dark px-3 py-2 rounded-lg transition"
+              className="text-sm font-semibold text-gray-700 hover:text-brand-dark px-3 py-2 rounded-lg transition whitespace-nowrap shrink-0"
             >
               Tickets Dashboard
             </Link>
 
             <Link
               href="/leaderboard"
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-brand-dark px-3 py-2 rounded-lg transition"
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-brand-dark px-3 py-2 rounded-lg transition whitespace-nowrap shrink-0"
             >
-              <Trophy className="w-4 h-4 text-amber-500" />
+              <Trophy className="w-4 h-4 text-amber-500 shrink-0" />
               Leaderboard
             </Link>
 
             {currentUser?.role === "AGENT" ? (
               <Link
                 href="/?filter=my_assigned"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold text-white shadow-xs transition hover:opacity-95 bg-brand-primary"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold text-white shadow-xs transition hover:opacity-95 bg-brand-primary whitespace-nowrap shrink-0"
               >
-                <Target className="w-4 h-4 text-brand-mint" />
+                <Target className="w-4 h-4 text-brand-mint shrink-0" />
                 <span>My Assigned Tickets</span>
                 {typeof activeCount === "number" && (
-                  <span className="ml-1 px-1.5 py-0.2 rounded-full text-xs font-black bg-white text-brand-dark">
+                  <span className="ml-1 px-1.5 py-0.2 rounded-full text-xs font-black bg-white text-brand-dark shrink-0">
                     {activeCount}
                   </span>
                 )}
@@ -124,9 +124,9 @@ export function Navbar({ currentUser, assignedTicketsCount, onRefresh }: NavbarP
             ) : (
               <Link
                 href="/tickets/new"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white shadow-xs transition hover:opacity-95 bg-brand-primary"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white shadow-xs transition hover:opacity-95 bg-brand-primary whitespace-nowrap shrink-0"
               >
-                <PlusCircle className="w-4 h-4" />
+                <PlusCircle className="w-4 h-4 shrink-0" />
                 New Ticket
               </Link>
             )}

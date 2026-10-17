@@ -16,8 +16,10 @@ import {
   RefreshCw,
   ArrowUpRight,
   ShieldCheck,
+  ShieldAlert,
   Cpu,
   Layers,
+  Star,
 } from "lucide-react";
 
 interface LeaderboardItem {
@@ -31,6 +33,10 @@ interface LeaderboardItem {
   slaComplianceRate: number;
   avgResolutionTimeHours: number;
   customerSatisfaction: number;
+  avgRating?: number;
+  reviewCount?: number;
+  reportsCount?: number;
+  recentReviews?: Array<{ rating: number; comment: string; submittedAt: string; ticketNumber: string }>;
   aiPerformanceScore: number;
   availability: "Free" | "Available" | "Busy";
   rank: number;
@@ -304,6 +310,27 @@ export default function LeaderboardPage() {
                       </div>
                     </div>
 
+                    {/* Customer Rating & Reports Pill */}
+                    <div className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl bg-white/90 border border-brand-light">
+                      <div className="flex items-center gap-1 text-amber-500 font-bold">
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        <span className="text-gray-900 font-black">{agent.avgRating || 5.0}</span>
+                        <span className="text-gray-500 text-[10px]">({agent.reviewCount || 0} reviews)</span>
+                      </div>
+
+                      {agent.reportsCount && agent.reportsCount > 0 ? (
+                        <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded flex items-center gap-1 whitespace-nowrap shrink-0">
+                          <ShieldAlert className="w-3 h-3 text-red-600" />
+                          {agent.reportsCount} Reported (-{agent.reportsCount * 15} pts)
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded flex items-center gap-1 whitespace-nowrap shrink-0">
+                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                          Clean Record
+                        </span>
+                      )}
+                    </div>
+
                     {/* Metrics Grid */}
                     <div className="grid grid-cols-3 gap-2 pt-2 border-t border-brand-light/70 text-center">
                       <div className="bg-white/80 p-2 rounded-lg border border-brand-light">
@@ -383,29 +410,30 @@ export default function LeaderboardPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-brand-light/60 text-brand-dark uppercase tracking-wider text-[10px] font-bold border-y border-brand-light">
                 <tr>
-                  <th className="py-3 px-4">Rank</th>
-                  <th className="py-3 px-4">Agent Name & Role</th>
-                  <th className="py-3 px-4">Capacity Status</th>
-                  <th className="py-3 px-4 text-center">Tickets Solved</th>
-                  <th className="py-3 px-4 text-center">Active Load</th>
-                  <th className="py-3 px-4 text-center">SLA Compliance</th>
-                  <th className="py-3 px-4 text-center">Avg Resolution</th>
-                  <th className="py-3 px-4 text-center">Customer CSAT</th>
-                  <th className="py-3 px-4">AI Score</th>
-                  <th className="py-3 px-4">Performance Badge</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Rank</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Agent Name & Role</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Capacity Status</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">Tickets Solved</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">Active Load</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">SLA Compliance</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">Avg Resolution</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">⭐ Rating & Reviews</th>
+                  <th className="py-3 px-4 text-center whitespace-nowrap">Customer CSAT</th>
+                  <th className="py-3 px-4 whitespace-nowrap">AI Score</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Badge & Audit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-light">
                 {filteredLeaderboard.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="py-8 text-center text-gray-400 text-xs">
+                    <td colSpan={11} className="py-8 text-center text-gray-400 text-xs">
                       No support agents matched your search query.
                     </td>
                   </tr>
                 ) : (
                   filteredLeaderboard.map((agent) => (
                     <tr key={agent.id} className="hover:bg-brand-light/20 transition">
-                      <td className="py-3.5 px-4 font-mono font-bold text-gray-700">
+                      <td className="py-3.5 px-4 font-mono font-bold text-gray-700 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center justify-center w-6 h-6 rounded-lg text-xs font-black ${
                             agent.rank === 1
@@ -421,12 +449,12 @@ export default function LeaderboardPage() {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="font-bold text-gray-900">{agent.name}</div>
                         <div className="text-[11px] text-gray-500">{agent.email}</div>
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                             agent.availability === "Free"
@@ -449,15 +477,15 @@ export default function LeaderboardPage() {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-center font-mono font-bold text-gray-900">
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-gray-900 whitespace-nowrap">
                         {agent.ticketsResolved}
                       </td>
 
-                      <td className="py-3.5 px-4 text-center font-mono font-medium text-gray-600">
+                      <td className="py-3.5 px-4 text-center font-mono font-medium text-gray-600 whitespace-nowrap">
                         {agent.activeTickets}
                       </td>
 
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         <span
                           className={`font-mono font-bold ${
                             agent.slaComplianceRate >= 90
@@ -471,15 +499,23 @@ export default function LeaderboardPage() {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-center font-mono text-gray-700">
+                      <td className="py-3.5 px-4 text-center font-mono text-gray-700 whitespace-nowrap">
                         {agent.avgResolutionTimeHours} hrs
                       </td>
 
-                      <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-700">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1 font-bold text-amber-600 bg-amber-50/80 px-2.5 py-1 rounded-lg border border-amber-200">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          <span>{agent.avgRating || 5.0}</span>
+                          <span className="text-[10px] text-gray-500">({agent.reviewCount || 0})</span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-700 whitespace-nowrap">
                         {agent.customerSatisfaction}%
                       </td>
 
-                      <td className="py-3.5 px-4 min-w-[130px]">
+                      <td className="py-3.5 px-4 min-w-[130px] whitespace-nowrap">
                         <div className="flex items-center justify-between text-[11px] mb-1">
                           <span className="font-mono font-black text-brand-dark">
                             {agent.aiPerformanceScore}
@@ -494,10 +530,23 @@ export default function LeaderboardPage() {
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        <span className="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-light text-brand-dark border border-brand-mint/40">
-                          {agent.badge}
-                        </span>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-light text-brand-dark border border-brand-mint/40 whitespace-nowrap shrink-0">
+                            {agent.badge}
+                          </span>
+                          {agent.reportsCount && agent.reportsCount > 0 ? (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-red-100 text-red-800 border border-red-300 whitespace-nowrap shrink-0">
+                              <ShieldAlert className="w-2.5 h-2.5 text-red-600" />
+                              {agent.reportsCount} Report Penalized
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-semibold text-emerald-700 flex items-center gap-1 whitespace-nowrap shrink-0">
+                              <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
+                              Clean Audit
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
