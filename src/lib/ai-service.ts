@@ -22,7 +22,9 @@ export function analyzeTicketHeuristically(
     "ridiculous", "sue", "lawsuit", "refund now", "cancel subscription",
     "disaster", "horrible", "broken for days", "lost money", "urgent",
     "emergency", "down", "crash", "hacked", "stolen", "churi", "harassment",
-    "unjustified", "why deactivated"
+    "unjustified", "why deactivated", "cheated", "batpar", "dhokabaji",
+    "faltu service", "baje service", "shiggir solve koro", "police",
+    "consumer court", "illegal", "fraud", "threat"
   ];
 
   const negativeWords = [
@@ -32,31 +34,49 @@ export function analyzeTicketHeuristically(
     "deactivating", "suspended", "suspend", "banned", "ban", "blocked", "block",
     "disabled", "disable", "locked", "lost access", "denied", "cannot login",
     "cant login", "solve koro", "keno", "somossa", "somossha", "bondho",
-    "kaj kore na", "kaj korche na", "problem hocche", "help koro"
+    "kaj kore na", "kaj korche na", "problem hocche", "help koro", "loss",
+    "khoti", "deri", "late", "damage", "broken", "freeze", "loading error",
+    "timeout", "crash hoyeche", "open hoy na", "kaj hoy na", "invalid", "rejected", "declined"
   ];
 
   const positiveWords = [
     "thanks", "thank you", "great", "awesome", "appreciate", "helpful",
-    "love", "quick", "fixed", "good", "dhonnobad"
+    "love", "quick", "fixed", "good", "dhonnobad", "valobasha", "shundor", "resolved", "solved"
   ];
 
   const billingWords = [
-    "charge", "charged", "billing", "invoice", "payment", "credit card",
+    "charge", "charged", "billing", "invoice", "payment", "credit card", "debit card",
     "refund", "subscription", "pricing", "dollar", "taka", "receipt", "pay",
-    "bkash", "nagad", "kete nise", "keteche"
+    "bkash", "nagad", "rocket", "upay", "cellfin", "kete nise", "keteche", "taka ferot",
+    "double charge", "overcharge", "voucher", "coupon", "discount", "promo code",
+    "checkout", "transaction", "gateway", "stripe", "sslcommerz", "bank transfer",
+    "vat", "tax", "deposit", "withdraw", "money", "balance"
   ];
 
   const techWords = [
-    "api", "server", "crash", "database", "500", "404", "stack trace",
+    "api", "server", "crash", "database", "500", "404", "502", "503", "stack trace",
     "exception", "code", "latency", "timeout", "frontend", "backend",
-    "deploy", "docker", "bug", "outage", "downtime"
+    "deploy", "docker", "bug", "outage", "downtime", "white screen", "blank screen",
+    "load hoy na", "ghurtese", "infinite loop", "upload failed", "download error",
+    "network error", "ssl error", "connection failed", "app hang", "lagging", "memory leak", "sync error"
   ];
 
   const accountWords = [
     "account", "login", "password", "reset", "2fa", "otp", "profile", "access",
     "permission", "locked", "email change", "authenticate", "deactivate",
     "deactivated", "suspended", "suspend", "banned", "ban", "blocked", "disabled",
-    "reactivate", "reactivation", "unban", "kyc", "verification", "user", "akount", "khata"
+    "reactivate", "reactivation", "unban", "kyc", "verification", "user", "akount", "khata",
+    "sign in", "signup", "sign up", "register", "forgot password", "pass vule gechi",
+    "code ashe na", "sms ashe na", "phone number", "nid", "identity", "security question",
+    "hacked account", "unauthorized access", "profile update"
+  ];
+
+  const generalWords = [
+    "order", "tracking", "delivery", "parcel", "shipment", "courier", "delayed",
+    "where is my", "missing product", "wrong item", "damaged product", "return",
+    "exchange", "warranty", "guarantee", "claim", "feature request", "how to use",
+    "guide", "tutorial", "feedback", "support agent", "human agent", "contact number",
+    "hotline", "kothay", "ashe nai", "kivabe", "jante chai", "help lagbe", "manush agent"
   ];
 
   let angryCount = 0;
@@ -101,12 +121,14 @@ export function analyzeTicketHeuristically(
   const techScore = techWords.filter((w) => fullText.includes(w)).length;
   const accountScore = accountWords.filter((w) => fullText.includes(w)).length;
 
-  if (techScore >= billingScore && techScore >= accountScore && techScore > 0) {
-    recommendedCategory = "TECHNICAL";
+  if (accountScore >= billingScore && accountScore >= techScore && accountScore > 0) {
+    recommendedCategory = "ACCOUNT";
   } else if (billingScore >= techScore && billingScore >= accountScore && billingScore > 0) {
     recommendedCategory = "BILLING";
-  } else if (accountScore > 0) {
-    recommendedCategory = "ACCOUNT";
+  } else if (techScore > 0 && techScore >= billingScore && techScore >= accountScore) {
+    recommendedCategory = "TECHNICAL";
+  } else {
+    recommendedCategory = "GENERAL";
   }
 
   // Urgency score (0 - 100)
@@ -114,10 +136,10 @@ export function analyzeTicketHeuristically(
   if (sentiment === "FRUSTRATED") urgencyScore += 45;
   else if (sentiment === "NEGATIVE") urgencyScore += 25;
   if (angryCount > 0) urgencyScore += 20;
-  if (fullText.includes("urgent") || fullText.includes("immediately") || fullText.includes("outage")) {
+  if (fullText.includes("urgent") || fullText.includes("immediately") || fullText.includes("outage") || fullText.includes("emergency")) {
     urgencyScore += 25;
   }
-  // Account lockout or deactivation is an acute operational blocker
+  // Account lockout or deactivation or billing loss is an acute operational blocker
   if (
     fullText.includes("deactivate") ||
     fullText.includes("deactivated") ||
@@ -125,9 +147,13 @@ export function analyzeTicketHeuristically(
     fullText.includes("banned") ||
     fullText.includes("blocked") ||
     fullText.includes("locked") ||
-    fullText.includes("hacked")
+    fullText.includes("hacked") ||
+    fullText.includes("double charge") ||
+    fullText.includes("kete nise") ||
+    fullText.includes("crash") ||
+    fullText.includes("outage")
   ) {
-    urgencyScore += 30;
+    urgencyScore += 35;
   }
   urgencyScore = Math.min(100, Math.max(10, urgencyScore));
 
@@ -143,7 +169,14 @@ export function analyzeTicketHeuristically(
     : "";
 
   // Extract key issues
-  const extractedWords = [...angryWords, ...negativeWords, ...billingWords, ...techWords, ...accountWords];
+  const extractedWords = [
+    ...angryWords,
+    ...negativeWords,
+    ...billingWords,
+    ...techWords,
+    ...accountWords,
+    ...generalWords,
+  ];
   const keyIssues = Array.from(
     new Set(extractedWords.filter((w) => fullText.includes(w)).slice(0, 5))
   );

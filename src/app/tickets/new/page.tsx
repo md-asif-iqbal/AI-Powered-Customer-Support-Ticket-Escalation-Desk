@@ -71,7 +71,10 @@ export default function NewTicketPage() {
       }, 350);
       return () => clearTimeout(timer);
     } else {
-      setLiveAi(null);
+      const timer = setTimeout(() => {
+        setLiveAi(null);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [title, description]);
 
@@ -299,13 +302,20 @@ export default function NewTicketPage() {
                     >
                       Apply AI Suggestions
                     </button>
+
+                    <div className="p-2.5 bg-brand-primary/10 border border-brand-primary/30 rounded-lg text-[11px] text-brand-dark flex items-start gap-2">
+                      <Headset className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+                      <span>
+                        <strong>AI Auto-Assignment: </strong> Automatically assigns ticket to the least-loaded support agent upon submit.
+                      </span>
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-400 space-y-2">
                   <Headset className="w-8 h-8 mx-auto text-gray-300 animate-pulse" />
                   <p className="text-xs">
-                    Start typing your title and description to see live AI sentiment and escalation suggestions.
+                    Start typing your title and description to see live AI sentiment, urgency score, and automated agent assignment.
                   </p>
                 </div>
               )}
@@ -327,6 +337,32 @@ export default function NewTicketPage() {
                 className="w-full text-left p-2 rounded text-[11px] bg-brand-light hover:bg-gray-200 text-gray-800 transition"
               >
                 🚨 <strong>Critical Outage (Auto-Escalates)</strong>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setTitle("My account is deactivated");
+                  setDescription("amar account ta deactivate hoye gese keno solve koro");
+                  setCategory("ACCOUNT");
+                  setPriority("URGENT");
+                }}
+                className="w-full text-left p-2 rounded text-[11px] bg-brand-light hover:bg-gray-200 text-gray-800 transition"
+              >
+                🔒 <strong>Account Deactivated (Urgent / Banglish)</strong>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setTitle("White screen error and timeout on dashboard");
+                  setDescription("Every time I navigate to the dashboard, it shows a blank white screen with an API timeout 504 error. Please check immediately.");
+                  setCategory("TECHNICAL");
+                  setPriority("HIGH");
+                }}
+                className="w-full text-left p-2 rounded text-[11px] bg-brand-light hover:bg-gray-200 text-gray-800 transition"
+              >
+                🐞 <strong>Technical Bug (High Priority)</strong>
               </button>
 
               <button

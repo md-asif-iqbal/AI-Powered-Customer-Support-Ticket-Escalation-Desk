@@ -26,6 +26,7 @@ import {
   History,
   Lock,
   MessageSquare,
+  Headset,
 } from "lucide-react";
 
 interface TicketDetailData {
@@ -240,6 +241,21 @@ export default function TicketDetailPage({ params }: PageProps) {
                 <span className="flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5 text-brand-dark" />
                   Category: <strong className="text-gray-800">{ticket.category}</strong>
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1.5">
+                  <Headset className="w-3.5 h-3.5 text-brand-primary" />
+                  Assigned Agent:{" "}
+                  {ticket.assignedTo ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <strong className="text-gray-800">{ticket.assignedTo?.name}</strong>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-dark border border-brand-primary/30">
+                        🤖 AI Auto-Assigned
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-amber-600 font-semibold italic">Unassigned</span>
+                  )}
                 </span>
               </div>
             </div>
