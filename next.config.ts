@@ -10,11 +10,25 @@ const nextConfig: NextConfig = {
     },
   },
   async rewrites() {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001/api";
+    const rawUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (!rawUrl || (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://"))) {
+      // In local dev without explicit URL, proxy to local backend default
+      if (process.env.NODE_ENV !== "production") {
+        return [
+          {
+            source: "/api/:path*",
+            destination: "http://localhost:5001/api/:path*",
+          },
+        ];
+      }
+      return [];
+    }
+    const cleanUrl = rawUrl.replace(/\/+$/, "");
+    const destination = cleanUrl.endsWith("/api") ? cleanUrl : `${cleanUrl}/api`;
     return [
       {
         source: "/api/:path*",
-        destination: `${backendUrl}/:path*`,
+        destination: `${destination}/:path*`,
       },
     ];
   },

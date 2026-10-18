@@ -1,5 +1,13 @@
-export const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000/api";
+const getBaseBackendUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
+  if (envUrl) {
+    const clean = envUrl.replace(/\/+$/, "");
+    return clean.endsWith("/api") ? clean : `${clean}/api`;
+  }
+  return typeof window !== "undefined" ? "/api" : "http://localhost:5001/api";
+};
+
+export const BACKEND_URL = getBaseBackendUrl();
 
 function getToken(): string | null {
   if (typeof window !== "undefined") {
