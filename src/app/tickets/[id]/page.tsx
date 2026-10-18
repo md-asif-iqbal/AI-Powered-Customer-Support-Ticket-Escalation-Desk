@@ -817,8 +817,9 @@ export default function TicketDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Customer Review & Incident Reporting Card */}
-            {isCustomerOwner && (
+            {/* Customer Review & Incident Reporting Card - ONLY visible after ticket is RESOLVED or CLOSED */}
+            {(ticket.status === "RESOLVED" || ticket.status === "CLOSED") &&
+              (ticket.customerFeedback?.submittedAt || isCustomerOwner) && (
               <div className="bg-white rounded-2xl p-6 shadow-xs border border-brand-light space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-brand-light">
                   <div className="flex items-center gap-2">
